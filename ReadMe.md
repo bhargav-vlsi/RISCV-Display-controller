@@ -75,7 +75,7 @@ int main()
 	
 	
 	//initialize with hypen
-	display1_output('-');
+	display1_output(1);
 	
 	
 	while(1)
@@ -195,18 +195,24 @@ unsigned char read_mode(void)
 
 void display1_output(unsigned char num)
 {
+	int mask=0xFFFF80FF;
 	int temp=num*256;//shift by 8 bits to left to update display bits in x30
 	asm(
+	    "and x30, x30, %1\n\t"
 	    "or x30, x30, %0\n\t"
-	    :"=r"(temp));
+	    :"=r"(temp)
+	    :"=r"(mask));
 }
 
 void display_mode(unsigned char mode)//shift by 25 bits to left to update display mode led in x30
 {
+	int mask=0xFDFFFFFF;
 	asm(
+	    "and x30, x30, %1\n\t"
 	    "slli x10, %0, 25\n\t" 
 	    "or x30, x30, x10\n\t"  
-	    : "=r"(mode));
+	    : "=r"(mode)
+	    :"=r"(mask));
 }
 
 unsigned char read_delay(void)
@@ -228,12 +234,14 @@ unsigned char read_next(void)
         :"=r"(next));
         return next;
 }
+
 ```
 
 
 ### Assembly code
 
 ```
+
 display_controller.o:     file format elf64-littleriscv
 
 
@@ -248,7 +256,7 @@ Disassembly of section .text:
   14:	fe043023          	sd	zero,-32(s0)
   18:	fe042423          	sw	zero,-24(s0)
   1c:	fe0407a3          	sb	zero,-17(s0)
-  20:	02d00513          	li	a0,45
+  20:	00100513          	li	a0,1
   24:	00000097          	auipc	ra,0x0
   28:	000080e7          	jalr	ra # 24 <main+0x24>
 
@@ -602,56 +610,66 @@ Disassembly of section .text:
  4a4:	03010413          	addi	s0,sp,48
  4a8:	00050793          	mv	a5,a0
  4ac:	fcf40fa3          	sb	a5,-33(s0)
- 4b0:	fdf44783          	lbu	a5,-33(s0)
- 4b4:	0007879b          	sext.w	a5,a5
- 4b8:	0087979b          	slliw	a5,a5,0x8
- 4bc:	fef42623          	sw	a5,-20(s0)
- 4c0:	00ff6f33          	or	t5,t5,a5
- 4c4:	fef42623          	sw	a5,-20(s0)
- 4c8:	00000013          	nop
- 4cc:	02813403          	ld	s0,40(sp)
- 4d0:	03010113          	addi	sp,sp,48
- 4d4:	00008067          	ret
+ 4b0:	ffff87b7          	lui	a5,0xffff8
+ 4b4:	0ff78793          	addi	a5,a5,255 # ffffffffffff80ff <read_next+0xffffffffffff7ba3>
+ 4b8:	fef42623          	sw	a5,-20(s0)
+ 4bc:	fdf44783          	lbu	a5,-33(s0)
+ 4c0:	0007879b          	sext.w	a5,a5
+ 4c4:	0087979b          	slliw	a5,a5,0x8
+ 4c8:	fef42423          	sw	a5,-24(s0)
+ 4cc:	fec42783          	lw	a5,-20(s0)
+ 4d0:	00ff7f33          	and	t5,t5,a5
+ 4d4:	00ff6f33          	or	t5,t5,a5
+ 4d8:	fef42423          	sw	a5,-24(s0)
+ 4dc:	00000013          	nop
+ 4e0:	02813403          	ld	s0,40(sp)
+ 4e4:	03010113          	addi	sp,sp,48
+ 4e8:	00008067          	ret
 
-00000000000004d8 <display_mode>:
- 4d8:	fe010113          	addi	sp,sp,-32
- 4dc:	00813c23          	sd	s0,24(sp)
- 4e0:	02010413          	addi	s0,sp,32
- 4e4:	00050793          	mv	a5,a0
- 4e8:	fef407a3          	sb	a5,-17(s0)
- 4ec:	01979513          	slli	a0,a5,0x19
- 4f0:	00af6f33          	or	t5,t5,a0
- 4f4:	fef407a3          	sb	a5,-17(s0)
- 4f8:	00000013          	nop
- 4fc:	01813403          	ld	s0,24(sp)
- 500:	02010113          	addi	sp,sp,32
- 504:	00008067          	ret
+00000000000004ec <display_mode>:
+ 4ec:	fd010113          	addi	sp,sp,-48
+ 4f0:	02813423          	sd	s0,40(sp)
+ 4f4:	03010413          	addi	s0,sp,48
+ 4f8:	00050793          	mv	a5,a0
+ 4fc:	fcf40fa3          	sb	a5,-33(s0)
+ 500:	fe0007b7          	lui	a5,0xfe000
+ 504:	fff78793          	addi	a5,a5,-1 # fffffffffdffffff <read_next+0xfffffffffdfffaa3>
+ 508:	fef42623          	sw	a5,-20(s0)
+ 50c:	fec42783          	lw	a5,-20(s0)
+ 510:	00ff7f33          	and	t5,t5,a5
+ 514:	01979513          	slli	a0,a5,0x19
+ 518:	00af6f33          	or	t5,t5,a0
+ 51c:	fcf40fa3          	sb	a5,-33(s0)
+ 520:	00000013          	nop
+ 524:	02813403          	ld	s0,40(sp)
+ 528:	03010113          	addi	sp,sp,48
+ 52c:	00008067          	ret
 
-0000000000000508 <read_delay>:
- 508:	fe010113          	addi	sp,sp,-32
- 50c:	00813c23          	sd	s0,24(sp)
- 510:	02010413          	addi	s0,sp,32
- 514:	01df5513          	srli	a0,t5,0x1d
- 518:	00157793          	andi	a5,a0,1
- 51c:	fef407a3          	sb	a5,-17(s0)
- 520:	fef44783          	lbu	a5,-17(s0)
- 524:	00078513          	mv	a0,a5
- 528:	01813403          	ld	s0,24(sp)
- 52c:	02010113          	addi	sp,sp,32
- 530:	00008067          	ret
+0000000000000530 <read_delay>:
+ 530:	fe010113          	addi	sp,sp,-32
+ 534:	00813c23          	sd	s0,24(sp)
+ 538:	02010413          	addi	s0,sp,32
+ 53c:	01df5513          	srli	a0,t5,0x1d
+ 540:	00157793          	andi	a5,a0,1
+ 544:	fef407a3          	sb	a5,-17(s0)
+ 548:	fef44783          	lbu	a5,-17(s0)
+ 54c:	00078513          	mv	a0,a5
+ 550:	01813403          	ld	s0,24(sp)
+ 554:	02010113          	addi	sp,sp,32
+ 558:	00008067          	ret
 
-0000000000000534 <read_next>:
- 534:	fe010113          	addi	sp,sp,-32
- 538:	00813c23          	sd	s0,24(sp)
- 53c:	02010413          	addi	s0,sp,32
- 540:	01bf5513          	srli	a0,t5,0x1b
- 544:	00157793          	andi	a5,a0,1
- 548:	fef407a3          	sb	a5,-17(s0)
- 54c:	fef44783          	lbu	a5,-17(s0)
- 550:	00078513          	mv	a0,a5
- 554:	01813403          	ld	s0,24(sp)
- 558:	02010113          	addi	sp,sp,32
- 55c:	00008067          	ret
+000000000000055c <read_next>:
+ 55c:	fe010113          	addi	sp,sp,-32
+ 560:	00813c23          	sd	s0,24(sp)
+ 564:	02010413          	addi	s0,sp,32
+ 568:	01bf5513          	srli	a0,t5,0x1b
+ 56c:	00157793          	andi	a5,a0,1
+ 570:	fef407a3          	sb	a5,-17(s0)
+ 574:	fef44783          	lbu	a5,-17(s0)
+ 578:	00078513          	mv	a0,a5
+ 57c:	01813403          	ld	s0,24(sp)
+ 580:	02010113          	addi	sp,sp,32
+ 584:	00008067          	ret
  ```
  
  ### Unique instrcutions in assembly code
@@ -659,33 +677,34 @@ Disassembly of section .text:
  We use python script to count the unique instructions used in this application.
  
  ```
- Number of different instructions: 26
+Number of different instructions: 27
 List of unique instructions:
-auipc
-srli
-slliw
-add
-jalr
-addiw
-sw
-j
-lui
-slli
-bnez
-addi
-lw
-nop
-sd
-bne
-sb
-li
-andi
-sext.w
-ld
-or
 mv
-beq
+addiw
+or
+auipc
+andi
+add
+and
+sd
+bnez
+j
 lbu
+nop
+sw
+ld
+ret
+li
+slliw
+sext.w
+srli
+slli
+addi
+jalr
+lw
+lui
+sb
+beq
  ```
  
  ### References
