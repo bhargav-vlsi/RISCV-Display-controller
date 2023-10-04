@@ -25,7 +25,7 @@ make
 
 Access the riscv32-unknown-elf-gcc inside bin folder of riscv32-toolchain folder in home folder of user as shown.
 ```
-/home/bhargav/riscv-toolchain/bin/riscv32-unknown-elf-gcc --version
+/home/bhargav/riscv32-toolchain/bin/riscv32-unknown-elf-gcc --version
 ```
 
 
