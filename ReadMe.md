@@ -23,6 +23,10 @@ sudo apt-get install libgmp-dev
 make
 ```
 
+Access the riscv32-unknown-elf-gcc inside bin folder of riscv32-toolchain folder in home folder of user as shown.
+```
+/home/bhargav/riscv-toolchain/bin/riscv32-unknown-elf-gcc --version
+```
 
 
 ### Display controller
