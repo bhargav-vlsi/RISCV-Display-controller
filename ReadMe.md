@@ -125,7 +125,7 @@ int main()
 			if(delay==1)
 			{
 				//end of text
-				if(message[count1]==255)
+				if(message[count1]==1)
 				{
 					count1=0;
 					continue;
@@ -259,7 +259,8 @@ unsigned char read_next(void)
 ### Assembly code
 
 ```
-display_controller.o:     file format elf32-littleriscv
+
+output.o:     file format elf32-littleriscv
 
 
 Disassembly of section .text:
@@ -335,7 +336,7 @@ Disassembly of section .text:
   ec:	ff078793          	add	a5,a5,-16
   f0:	008787b3          	add	a5,a5,s0
   f4:	fe87c703          	lbu	a4,-24(a5)
-  f8:	0ff00793          	li	a5,255
+  f8:	00100793          	li	a5,1
   fc:	00f71663          	bne	a4,a5,108 <.L6>
  100:	fe0407a3          	sb	zero,-17(s0)
  104:	02c0006f          	j	130 <.L5>
@@ -648,26 +649,26 @@ Disassembly of section .text:
  ```
 Number of different instructions: 20
 List of unique instructions:
-jalr
-lbu
-sll
-srl
-bnez
-mv
-li
-nop
-j
-bne
 or
-lui
-ret
-auipc
+add
+and
+mv
+sll
+beq
+lbu
+j
+nop
+bnez
 lw
 sb
+li
+auipc
+ret
+lui
+srl
+jalr
+bne
 sw
-beq
-and
-add
  ```
  
  ### References
