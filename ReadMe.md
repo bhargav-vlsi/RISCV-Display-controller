@@ -103,10 +103,10 @@ int main()
 		if(mode==1)//input new text
 		{
 			keypad=read_keypad();
-			if(keypad!=15)
+			if(keypad!=-1)
 			{
 				message[count1]=keypad;
-				if(keypad!=255)
+				if(keypad!=1)
 				{
 					count1++;
 					display1_output(keypad);
@@ -128,7 +128,7 @@ int main()
 				if(message[count1]==255)
 				{
 					count1=0;
-					break;
+					continue;
 				}				
 				display1_output(message[count1]);
 				count1++;
@@ -156,7 +156,7 @@ unsigned char read_keypad(void)
 	    	:"=r"(keypad));
 	    	if(keypad!=240)
 	    	{
-	    		unsigned char pressed=1;
+	    		//unsigned char pressed=1;
 	    		break;
 		}
 		i++;
@@ -164,7 +164,7 @@ unsigned char read_keypad(void)
 	}
 	if(row[i]==0)//no button pressed
 	{
-		return 15;
+		return -1;
 	}
 	else
 	{
@@ -215,12 +215,12 @@ unsigned char read_mode(void)
 void display1_output(unsigned char num)
 {
 	int mask=0xFFFF80FF;
-	int temp=num*256;//shift by 8 bits to left to update display bits in x30
+	int temp=num*128;//shift by 8 bits to left to update display bits in x30
 	asm(
 	    "and x30, x30, %1\n\t"
 	    "or x30, x30, %0\n\t"
 	    :"=r"(temp)
-	    :"=r"(mask));
+	    :"r"(mask));
 }
 
 void display_mode(unsigned char mode)//shift by 25 bits to left to update display mode led in x30
@@ -231,7 +231,7 @@ void display_mode(unsigned char mode)//shift by 25 bits to left to update displa
 	    "slli x10, %0, 25\n\t" 
 	    "or x30, x30, x10\n\t"  
 	    : "=r"(mode)
-	    :"=r"(mask));
+	    :"r"(mask));
 }
 
 unsigned char read_delay(void)
@@ -253,7 +253,6 @@ unsigned char read_next(void)
         :"=r"(next));
         return next;
 }
-
 ```
 
 
