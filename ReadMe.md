@@ -661,28 +661,29 @@ Disassembly of section .text:
  ```
 Number of different instructions: 22
 List of unique instructions:
+addi
+beq
+add
+nop
 slli
 sw
-and
-addi
-sb
-lw
-nop
 bne
-lui
-j
-beq
-andi
-srli
-lbu
 jal
-add
-beqz
-bnez
+lw
 mv
-li
-ret
+and
 or
+srli
+li
+beqz
+lbu
+sb
+j
+lui
+ret
+bnez
+andi
+
  ```
  
  ### References
