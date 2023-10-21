@@ -73,8 +73,6 @@ x30[31] is input/display mode input pin.
 
 ### Binary codes for keypad 
 
-![Keypad](./Images/Keypad.jpg)
-
 For row wise scanning process, we should put values as follows and then read column pins to determine the button.
 
 | Buttons | Row | Column |
