@@ -150,10 +150,11 @@ int main()
 	while(1)
 	{
 		mode=read_mode();
+		display_mode(mode);
 		if(mode==1)//input new text
 		{
 			keypad=read_keypad();
-			if(keypad!=-1)
+			if(keypad!=0)
 			{
 				message[count1]=keypad;
 				if(keypad!=1)
@@ -161,7 +162,10 @@ int main()
 					count1++;
 					display1_output(keypad);
 					next=read_next();
-					while(next==0);
+					while(next==0)
+					{
+						next=read_next();
+					}
 				}
 				else
 				{
@@ -193,10 +197,11 @@ int main()
 unsigned char read_keypad(void)
 {
 	unsigned char keypad;
-	unsigned char row[5]={14,13,11,7,0};
+	//unsigned char row[5]={14,13,11,7,0};
+	unsigned char row;
 	unsigned char i=0;
 	int mask=0xFFFFFF00;
-	while(row[i]>0)
+	/*while(row[i]>0)
 	{
 		asm volatile(
 		"and x30,x30,%1\n\t"
@@ -219,38 +224,133 @@ unsigned char read_keypad(void)
 		}
 		i++;
 		
-	}
-	if(row[i]==0)//no button pressed
+	}*/
+	
+	//row 0
+	row=14;
+	if(i==0)
 	{
-		return -1;
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=14;
+	    	}
+	}
+	
+	//row1
+	row=13;
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=13;
+	    	}
+	}
+	//row2
+	row=11;
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=11;
+	    	}
+	}
+	
+	//row3
+	row=7;
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=7;
+	    	}
+	}
+	if(i==0)//no button pressed
+	{
+		return 0;
 	}
 	else
 	{
-		if(row[i]==14)//row=1
+		if(i==14)//row=0
 		{
 			if(keypad==224) keypad=48;//1
 			else if(keypad==208) keypad=109;//2
 			else if(keypad==176) keypad=121;//3
 			else if(keypad==112) keypad=119;//A
 		}
-		else if(row[i]==13)//row=2
+		else if(i==13)//row=1
 		{
 			if(keypad==224) keypad=51;//4
 			else if(keypad==208) keypad=91;//5
 			else if(keypad==176) keypad=94;//6
 			else if(keypad==112) keypad=31;//B
 		}
-		else if(row[i]==11)//row=3
+		else if(i==11)//row=2
 		{
 			if(keypad==224) keypad=112;//7
 			else if(keypad==208) keypad=127;//8
 			else if(keypad==176) keypad=115;//9
 			else if(keypad==112) keypad=78;//C
 		}
-		else if(row[i]==7)//row=4
+		else if(i==7)//row=3
 		{
 			if(keypad==224) keypad=1;//-
-			else if(keypad==208) keypad=126;//0
+			else if(keypad==208) keypad=127;//0
 			else if(keypad==176) keypad=1;//-
 			else if(keypad==112) keypad=61;//D
 		}
@@ -324,13 +424,664 @@ unsigned char read_next(void)
         );
         return next;
 }
+
 ```
+
+### Debugging & Simulation
+
+```
+#include<stdio.h>
+
+unsigned char read_keypad(int);
+void display1_output(unsigned char num);
+void display_mode(unsigned char mode);
+
+unsigned char read_next(void);
+unsigned char read_mode(void);
+unsigned char read_delay(void);
+
+
+int main()
+{
+	unsigned char mode;
+	unsigned char display1;
+	unsigned char delay;
+	unsigned char next;
+	unsigned char keypad;
+	unsigned char message[20]={};
+	unsigned char count1=0;
+	
+	
+	//initialize with hypen
+	display1_output(1);
+	
+	
+	for(int j=0;j<15;j++)
+	{
+		mode=read_mode();
+		
+		//debugging
+		if(j>=5) mode=0;
+		printf("mode=%d\n",mode);
+		//debugging
+		
+		display_mode(mode);
+		if(mode==1)//input new text
+		{
+			printf("input mode\n");
+			keypad=read_keypad(j);
+			
+			//debugging
+			if(keypad==0)
+				printf("keypad=%d\n no key pressed\n",keypad);
+			else printf("keypad=%d\n",keypad);
+			if(keypad==48) printf("Key 1 is pressed\n");
+			if(keypad==109) printf("Key 2 is pressed\n");
+			if(keypad==121) printf("Key 3 is pressed\n");
+			if(keypad==51) printf("Key 4 is pressed\n");
+			//debugging
+			
+			
+			if(keypad!=0)
+			{
+				message[count1]=keypad;
+				if(keypad!=1)
+				{
+					count1++;
+					display1_output(keypad);
+					next=read_next();
+					while(next==0)
+					{
+						next=read_next();
+					}
+				}
+				else
+				{
+					count1=0;
+				}
+				
+			}
+		}
+		else if(mode==0)//display stored text
+		{
+			//debugging
+			printf("display mode\n");
+			//debugging
+			delay=read_delay();
+			if(delay==1)
+			{
+				//end of text
+				if(message[count1]==1)
+				{
+					count1=0;
+					continue;
+				}				
+				display1_output(message[count1]);
+				count1++;
+				
+			}
+		}
+	}
+	return(0);
+}
+
+unsigned char read_keypad(int j)
+{
+	printf("Entering read_keypad\n");
+	unsigned char keypad;
+	//unsigned char row[5]={14,13,11,7,0};
+	unsigned char row;
+	unsigned char i=0;
+	int mask=0xFFFFFFF0;
+	/*while(row[i]>0)
+	{
+		asm volatile(
+		"and x30,x30,%1\n\t"
+	    	"or x30, x30, %0\n\t"
+	    	:
+	    	:"r"(row[i]),"r"(mask)
+	    	:"x30"
+	    	);
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240)
+	    	{
+	    		//unsigned char pressed=1;
+	    		break;
+		}
+		i++;
+		
+	}*/
+	
+	//debugging
+	int input;
+	int mask2=0xFFFFFF0F;
+	 if(j==0) input=224;//1
+	 else if(j==1) input=208;//2
+	 else if(j==2) input=176;//3
+	 else if(j==3) input=224;//4
+	 else if(j==4) input=224;//-*
+	   
+	if(j<3) i=0;
+	else i=-1;
+	//input=240;//no key pressed
+	
+	asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask2),"r"(input)
+	    	:"x30"
+	    	);
+	  
+	 //debugging
+	
+	//row 0
+	row=14;
+	
+	
+	
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	//debugging
+	    	int write_row;
+	    	asm volatile(
+	    	"andi %0, x30, 15\n\t"
+	    	:"=r"(write_row)
+	    	:
+	    	:
+	    	);
+	    	printf("row value u r writing %d\nScanning row 1\n",write_row);
+	    	//debugging
+	    	
+	    	
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=14;
+	    	}
+	}
+	
+	//debugging
+	if(j==3) i=0;
+	//debugging
+	
+	//row1
+	row=13;
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	//debugging
+	    	int write_row;
+	    	asm volatile(
+	    	"andi %0, x30, 15\n\t"
+	    	:"=r"(write_row)
+	    	:
+	    	:
+	    	);
+	    	printf("row value u r writing %d\nScanning row 2\n",write_row);
+	    	//debugging
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=13;
+	    	}
+	}
+	
+	
+	
+	//row2
+	row=11;
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	//debugging
+	    	int write_row;
+	    	asm volatile(
+	    	"andi %0, x30, 15\n\t"
+	    	:"=r"(write_row)
+	    	:
+	    	:
+	    	);
+	    	printf("row value u r writing %d\nScanning row 3\n",write_row);
+	    	//debugging
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=11;
+	    	}
+	}
+	
+	
+	//debugging
+	if(j==4) i=0;
+	//printf("j=%d\n",j);
+	//debugging
+	//row3
+	row=7;
+	if(i==0)
+	{
+		asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(row)
+	    	:"x30"
+	    	);
+	    	
+	    	//debugging
+	    	int write_row;
+	    	asm volatile(
+	    	"andi %0, x30, 15\n\t"
+	    	:"=r"(write_row)
+	    	:
+	    	:
+	    	);
+	    	printf("row value u r writing %d\nScanning row 4\n",write_row);
+	    	//debugging
+	    	
+	    	asm volatile(
+	    	"andi %0, x30, 240\n\t"
+	    	:"=r"(keypad)
+	    	:
+	    	:
+	    	);
+	    	if(keypad!=240) 
+	    	{
+	    		i=7;
+	    	}
+	}
+	
+	if(i==0)//no button pressed
+	{
+		return 0;
+	}
+	else
+	{
+		if(i==14)//row=0
+		{
+			if(keypad==224) keypad=48;//1
+			else if(keypad==208) keypad=109;//2
+			else if(keypad==176) keypad=121;//3
+			else if(keypad==112) keypad=119;//A
+		}
+		else if(i==13)//row=1
+		{
+			if(keypad==224) keypad=51;//4
+			else if(keypad==208) keypad=91;//5
+			else if(keypad==176) keypad=94;//6
+			else if(keypad==112) keypad=31;//B
+		}
+		else if(i==11)//row=2
+		{
+			if(keypad==224) keypad=112;//7
+			else if(keypad==208) keypad=127;//8
+			else if(keypad==176) keypad=115;//9
+			else if(keypad==112) keypad=78;//C
+		}
+		else if(i==7)//row=3
+		{
+			if(keypad==224) keypad=1;//-
+			else if(keypad==208) keypad=127;//0
+			else if(keypad==176) keypad=1;//-
+			else if(keypad==112) keypad=61;//D
+		}
+	}
+	
+        
+        return keypad;
+}
+
+unsigned char read_mode(void)
+{
+	//debugging
+	printf("----------------------\nEntering read_mode\n");
+	//debugging
+	
+	unsigned char mode;//read whether controller is in display mode or input mode
+	
+	//debugging
+	int mask=0x7FFFFFFF;
+	int input=0x80000000;
+	asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(input)
+	    	:"x30"
+	    	);
+	//debugging    	
+	    	
+	asm volatile(
+	"srli x10, x30, 31\n\t"
+	"andi %0, x10, 1\n\t"
+	:"=r"(mode)
+	:
+        :"x10"
+        );
+        return mode;
+}
+
+void display1_output(unsigned char num)
+{
+	//debugging
+	printf("Entering display_output\n");
+	//debugging
+	
+	int mask=0xFFFF80FF;
+	int temp=num*256;//shift by 8 bits to left to update display bits in x30
+	asm volatile( 
+	    "and x30, x30, %1\n\t"
+	    "or x30, x30, %0\n\t"
+	    :
+	    :"r"(temp),"r"(mask)
+	    :"x30"
+	    );
+	    
+	    
+	//debugging
+	int output;
+	asm volatile(
+		"srli x10, x30, 8\n\t"
+		"andi %0, x10, 255\n\t"
+		:"=r"(output)
+		:
+		:"x10"
+		);
+	if(output==48) printf("7 segment is showing 1\n");
+	if(output==109) printf("7 segment is showing 2\n");
+	if(output==121) printf("7 segment is showing 3\n");
+	if(output==51) printf("7 segment is showing 4\n");
+	printf("-----------------------\n");
+	//printf("7 segment value is %d\n\n",output);
+	//debugging
+}
+
+void display_mode(unsigned char mode)//shift by 25 bits to left to update display mode led in x30
+{
+	//debugging
+	printf("Entering display_mode\n");
+	//debugging
+	
+	int mask=0xFDFFFFFF;
+	asm volatile(
+	    "and x30, x30, %1\n\t"
+	    "slli x10, %0, 25\n\t" 
+	    "or x30, x30, x10\n\t"  
+	    : 
+	    :"r"(mode),"r"(mask)
+	    :"x30","x10"
+	    );
+}
+
+unsigned char read_delay(void)
+{
+	printf("Entering read_delay\n");
+	//debugging
+	int mask=0xDFFFFFFF;
+	int input=0x20000000;
+	asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(input)
+	    	:"x30"
+	    	);
+	//debugging
+	
+	
+	unsigned char delay;// read delay signal generated by external circuit 
+	asm volatile(
+	"srli x10, x30, 29\n\t"
+	"andi %0, x10, 1\n\t"
+        :"=r"(delay)
+        :
+        :"x10"
+        );
+        return delay;
+}
+
+unsigned char read_next(void)
+{
+	printf("Entering read_next\n");
+	//debugging
+	int mask=0xF7FFFFFF;
+	int input=0x08000000;
+	asm volatile(
+		"and x30,x30,%0\n\t"
+	    	"or x30, x30, %1\n\t"
+	    	:
+	    	:"r"(mask),"r"(input)
+	    	:"x30"
+	    	);
+	//debugging
+	
+	unsigned char next;// read next button to accpet next character of text.
+	asm volatile(
+	"srli x10, x30, 27\n\t"
+	"andi %0, x10, 1\n\t"
+        :"=r"(next)
+        :
+        :"x10"
+        );
+        return next;
+}
+```
+
+The simulation commands and outputs are as follows:
+
+```
+riscv64-unknown-elf-gcc -march=rv64i -mabi=lp64 -ffreestanding -o out file.c
+spike pk out
+```
+
+Output:
+```
+bbl loader
+Entering display_output
+-----------------------
+----------------------
+Entering read_mode
+mode=1
+Entering display_mode
+input mode
+Entering read_keypad
+row value u r writing 14
+Scanning row 1
+keypad=48
+Key 1 is pressed
+Entering display_output
+7 segment is showing 1
+-----------------------
+Entering read_next
+----------------------
+Entering read_mode
+mode=1
+Entering display_mode
+input mode
+Entering read_keypad
+row value u r writing 14
+Scanning row 1
+keypad=109
+Key 2 is pressed
+Entering display_output
+7 segment is showing 2
+-----------------------
+Entering read_next
+----------------------
+Entering read_mode
+mode=1
+Entering display_mode
+input mode
+Entering read_keypad
+row value u r writing 14
+Scanning row 1
+keypad=121
+Key 3 is pressed
+Entering display_output
+7 segment is showing 3
+-----------------------
+Entering read_next
+----------------------
+Entering read_mode
+mode=1
+Entering display_mode
+input mode
+Entering read_keypad
+row value u r writing 13
+Scanning row 2
+keypad=51
+Key 4 is pressed
+Entering display_output
+7 segment is showing 4
+-----------------------
+Entering read_next
+----------------------
+Entering read_mode
+mode=1
+Entering display_mode
+input mode
+Entering read_keypad
+row value u r writing 7
+Scanning row 4
+keypad=1
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 1
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 2
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 3
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 4
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 1
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 2
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 3
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+Entering display_output
+7 segment is showing 4
+-----------------------
+----------------------
+Entering read_mode
+mode=0
+Entering display_mode
+display mode
+Entering read_delay
+```
+
 
 
 ### Assembly code
 
 ```
-display_controller.out:     file format elf32-littleriscv
+
+c.out:     file format elf32-littleriscv
 
 
 Disassembly of section .text:
@@ -345,313 +1096,338 @@ Disassembly of section .text:
    1006c:	fc042e23          	sw	zero,-36(s0)
    10070:	fe042023          	sw	zero,-32(s0)
    10074:	fe042223          	sw	zero,-28(s0)
-   10078:	fe0407a3          	sb	zero,-17(s0)
+   10078:	fe040723          	sb	zero,-18(s0)
    1007c:	00100513          	li	a0,1
-   10080:	3ac000ef          	jal	ra,1042c <display1_output>
-   10084:	37c000ef          	jal	ra,10400 <read_mode>
+   10080:	410000ef          	jal	ra,10490 <display1_output>
+   10084:	3e0000ef          	jal	ra,10464 <read_mode>
    10088:	00050793          	mv	a5,a0
-   1008c:	fef40723          	sb	a5,-18(s0)
-   10090:	fee44703          	lbu	a4,-18(s0)
-   10094:	00100793          	li	a5,1
-   10098:	06f71463          	bne	a4,a5,10100 <main+0xac>
-   1009c:	0cc000ef          	jal	ra,10168 <read_keypad>
-   100a0:	00050793          	mv	a5,a0
-   100a4:	fef406a3          	sb	a5,-19(s0)
-   100a8:	fef44783          	lbu	a5,-17(s0)
-   100ac:	ff040713          	addi	a4,s0,-16
-   100b0:	00f707b3          	add	a5,a4,a5
-   100b4:	fed44703          	lbu	a4,-19(s0)
-   100b8:	fee78223          	sb	a4,-28(a5)
-   100bc:	fed44703          	lbu	a4,-19(s0)
-   100c0:	00100793          	li	a5,1
-   100c4:	02f70a63          	beq	a4,a5,100f8 <main+0xa4>
-   100c8:	fef44783          	lbu	a5,-17(s0)
-   100cc:	00178793          	addi	a5,a5,1
-   100d0:	fef407a3          	sb	a5,-17(s0)
-   100d4:	fed44783          	lbu	a5,-19(s0)
-   100d8:	00078513          	mv	a0,a5
-   100dc:	350000ef          	jal	ra,1042c <display1_output>
-   100e0:	408000ef          	jal	ra,104e8 <read_next>
-   100e4:	00050793          	mv	a5,a0
-   100e8:	fef40623          	sb	a5,-20(s0)
-   100ec:	fec44783          	lbu	a5,-20(s0)
-   100f0:	fe078ee3          	beqz	a5,100ec <main+0x98>
-   100f4:	f91ff06f          	j	10084 <main+0x30>
-   100f8:	fe0407a3          	sb	zero,-17(s0)
-   100fc:	f89ff06f          	j	10084 <main+0x30>
-   10100:	fee44783          	lbu	a5,-18(s0)
-   10104:	f80790e3          	bnez	a5,10084 <main+0x30>
-   10108:	3b4000ef          	jal	ra,104bc <read_delay>
-   1010c:	00050793          	mv	a5,a0
-   10110:	fef405a3          	sb	a5,-21(s0)
-   10114:	feb44703          	lbu	a4,-21(s0)
-   10118:	00100793          	li	a5,1
-   1011c:	f6f714e3          	bne	a4,a5,10084 <main+0x30>
-   10120:	fef44783          	lbu	a5,-17(s0)
-   10124:	ff040713          	addi	a4,s0,-16
-   10128:	00f707b3          	add	a5,a4,a5
-   1012c:	fe47c703          	lbu	a4,-28(a5)
-   10130:	00100793          	li	a5,1
-   10134:	00f71663          	bne	a4,a5,10140 <main+0xec>
-   10138:	fe0407a3          	sb	zero,-17(s0)
-   1013c:	0280006f          	j	10164 <main+0x110>
-   10140:	fef44783          	lbu	a5,-17(s0)
-   10144:	ff040713          	addi	a4,s0,-16
-   10148:	00f707b3          	add	a5,a4,a5
-   1014c:	fe47c783          	lbu	a5,-28(a5)
-   10150:	00078513          	mv	a0,a5
-   10154:	2d8000ef          	jal	ra,1042c <display1_output>
-   10158:	fef44783          	lbu	a5,-17(s0)
-   1015c:	00178793          	addi	a5,a5,1
-   10160:	fef407a3          	sb	a5,-17(s0)
-   10164:	f21ff06f          	j	10084 <main+0x30>
+   1008c:	fef406a3          	sb	a5,-19(s0)
+   10090:	fed44783          	lbu	a5,-19(s0)
+   10094:	00078513          	mv	a0,a5
+   10098:	444000ef          	jal	ra,104dc <display_mode>
+   1009c:	fed44703          	lbu	a4,-19(s0)
+   100a0:	00100793          	li	a5,1
+   100a4:	08f71063          	bne	a4,a5,10124 <main+0xd0>
+   100a8:	0e4000ef          	jal	ra,1018c <read_keypad>
+   100ac:	00050793          	mv	a5,a0
+   100b0:	fef40623          	sb	a5,-20(s0)
+   100b4:	fec44783          	lbu	a5,-20(s0)
+   100b8:	fc0786e3          	beqz	a5,10084 <main+0x30>
+   100bc:	fee44783          	lbu	a5,-18(s0)
+   100c0:	ff040713          	addi	a4,s0,-16
+   100c4:	00f707b3          	add	a5,a4,a5
+   100c8:	fec44703          	lbu	a4,-20(s0)
+   100cc:	fee78223          	sb	a4,-28(a5)
+   100d0:	fec44703          	lbu	a4,-20(s0)
+   100d4:	00100793          	li	a5,1
+   100d8:	04f70263          	beq	a4,a5,1011c <main+0xc8>
+   100dc:	fee44783          	lbu	a5,-18(s0)
+   100e0:	00178793          	addi	a5,a5,1
+   100e4:	fef40723          	sb	a5,-18(s0)
+   100e8:	fec44783          	lbu	a5,-20(s0)
+   100ec:	00078513          	mv	a0,a5
+   100f0:	3a0000ef          	jal	ra,10490 <display1_output>
+   100f4:	458000ef          	jal	ra,1054c <read_next>
+   100f8:	00050793          	mv	a5,a0
+   100fc:	fef407a3          	sb	a5,-17(s0)
+   10100:	0100006f          	j	10110 <main+0xbc>
+   10104:	448000ef          	jal	ra,1054c <read_next>
+   10108:	00050793          	mv	a5,a0
+   1010c:	fef407a3          	sb	a5,-17(s0)
+   10110:	fef44783          	lbu	a5,-17(s0)
+   10114:	fe0788e3          	beqz	a5,10104 <main+0xb0>
+   10118:	f6dff06f          	j	10084 <main+0x30>
+   1011c:	fe040723          	sb	zero,-18(s0)
+   10120:	f65ff06f          	j	10084 <main+0x30>
+   10124:	fed44783          	lbu	a5,-19(s0)
+   10128:	f4079ee3          	bnez	a5,10084 <main+0x30>
+   1012c:	3f4000ef          	jal	ra,10520 <read_delay>
+   10130:	00050793          	mv	a5,a0
+   10134:	fef405a3          	sb	a5,-21(s0)
+   10138:	feb44703          	lbu	a4,-21(s0)
+   1013c:	00100793          	li	a5,1
+   10140:	f4f712e3          	bne	a4,a5,10084 <main+0x30>
+   10144:	fee44783          	lbu	a5,-18(s0)
+   10148:	ff040713          	addi	a4,s0,-16
+   1014c:	00f707b3          	add	a5,a4,a5
+   10150:	fe47c703          	lbu	a4,-28(a5)
+   10154:	00100793          	li	a5,1
+   10158:	00f71663          	bne	a4,a5,10164 <main+0x110>
+   1015c:	fe040723          	sb	zero,-18(s0)
+   10160:	0280006f          	j	10188 <main+0x134>
+   10164:	fee44783          	lbu	a5,-18(s0)
+   10168:	ff040713          	addi	a4,s0,-16
+   1016c:	00f707b3          	add	a5,a4,a5
+   10170:	fe47c783          	lbu	a5,-28(a5)
+   10174:	00078513          	mv	a0,a5
+   10178:	318000ef          	jal	ra,10490 <display1_output>
+   1017c:	fee44783          	lbu	a5,-18(s0)
+   10180:	00178793          	addi	a5,a5,1
+   10184:	fef40723          	sb	a5,-18(s0)
+   10188:	efdff06f          	j	10084 <main+0x30>
 
-00010168 <read_keypad>:
-   10168:	fe010113          	addi	sp,sp,-32
-   1016c:	00812e23          	sw	s0,28(sp)
-   10170:	02010413          	addi	s0,sp,32
-   10174:	000117b7          	lui	a5,0x11
-   10178:	51478793          	addi	a5,a5,1300 # 11514 <__DATA_BEGIN__>
-   1017c:	0007a703          	lw	a4,0(a5)
-   10180:	fee42023          	sw	a4,-32(s0)
-   10184:	0047c783          	lbu	a5,4(a5)
-   10188:	fef40223          	sb	a5,-28(s0)
-   1018c:	fe040723          	sb	zero,-18(s0)
-   10190:	f0000793          	li	a5,-256
-   10194:	fef42423          	sw	a5,-24(s0)
-   10198:	0400006f          	j	101d8 <read_keypad+0x70>
-   1019c:	fee44783          	lbu	a5,-18(s0)
-   101a0:	ff040713          	addi	a4,s0,-16
-   101a4:	00f707b3          	add	a5,a4,a5
-   101a8:	ff07c783          	lbu	a5,-16(a5)
-   101ac:	fe842703          	lw	a4,-24(s0)
-   101b0:	00ef7f33          	and	t5,t5,a4
-   101b4:	00ff6f33          	or	t5,t5,a5
-   101b8:	0f0f7793          	andi	a5,t5,240
-   101bc:	fef407a3          	sb	a5,-17(s0)
-   101c0:	fef44703          	lbu	a4,-17(s0)
-   101c4:	0f000793          	li	a5,240
-   101c8:	02f71463          	bne	a4,a5,101f0 <read_keypad+0x88>
-   101cc:	fee44783          	lbu	a5,-18(s0)
-   101d0:	00178793          	addi	a5,a5,1
-   101d4:	fef40723          	sb	a5,-18(s0)
-   101d8:	fee44783          	lbu	a5,-18(s0)
-   101dc:	ff040713          	addi	a4,s0,-16
-   101e0:	00f707b3          	add	a5,a4,a5
-   101e4:	ff07c783          	lbu	a5,-16(a5)
-   101e8:	fa079ae3          	bnez	a5,1019c <read_keypad+0x34>
-   101ec:	0080006f          	j	101f4 <read_keypad+0x8c>
-   101f0:	00000013          	nop
-   101f4:	fee44783          	lbu	a5,-18(s0)
-   101f8:	ff040713          	addi	a4,s0,-16
-   101fc:	00f707b3          	add	a5,a4,a5
-   10200:	ff07c783          	lbu	a5,-16(a5)
-   10204:	00079663          	bnez	a5,10210 <read_keypad+0xa8>
-   10208:	0ff00793          	li	a5,255
-   1020c:	1e40006f          	j	103f0 <read_keypad+0x288>
-   10210:	fee44783          	lbu	a5,-18(s0)
-   10214:	ff040713          	addi	a4,s0,-16
-   10218:	00f707b3          	add	a5,a4,a5
-   1021c:	ff07c703          	lbu	a4,-16(a5)
-   10220:	00e00793          	li	a5,14
-   10224:	06f71263          	bne	a4,a5,10288 <read_keypad+0x120>
-   10228:	fef44703          	lbu	a4,-17(s0)
-   1022c:	0e000793          	li	a5,224
-   10230:	00f71863          	bne	a4,a5,10240 <read_keypad+0xd8>
-   10234:	03000793          	li	a5,48
-   10238:	fef407a3          	sb	a5,-17(s0)
-   1023c:	1b00006f          	j	103ec <read_keypad+0x284>
-   10240:	fef44703          	lbu	a4,-17(s0)
-   10244:	0d000793          	li	a5,208
-   10248:	00f71863          	bne	a4,a5,10258 <read_keypad+0xf0>
-   1024c:	06d00793          	li	a5,109
-   10250:	fef407a3          	sb	a5,-17(s0)
-   10254:	1980006f          	j	103ec <read_keypad+0x284>
-   10258:	fef44703          	lbu	a4,-17(s0)
-   1025c:	0b000793          	li	a5,176
-   10260:	00f71863          	bne	a4,a5,10270 <read_keypad+0x108>
-   10264:	07900793          	li	a5,121
-   10268:	fef407a3          	sb	a5,-17(s0)
-   1026c:	1800006f          	j	103ec <read_keypad+0x284>
-   10270:	fef44703          	lbu	a4,-17(s0)
-   10274:	07000793          	li	a5,112
-   10278:	16f71a63          	bne	a4,a5,103ec <read_keypad+0x284>
-   1027c:	07700793          	li	a5,119
-   10280:	fef407a3          	sb	a5,-17(s0)
-   10284:	1680006f          	j	103ec <read_keypad+0x284>
-   10288:	fee44783          	lbu	a5,-18(s0)
-   1028c:	ff040713          	addi	a4,s0,-16
-   10290:	00f707b3          	add	a5,a4,a5
-   10294:	ff07c703          	lbu	a4,-16(a5)
-   10298:	00d00793          	li	a5,13
-   1029c:	06f71263          	bne	a4,a5,10300 <read_keypad+0x198>
-   102a0:	fef44703          	lbu	a4,-17(s0)
-   102a4:	0e000793          	li	a5,224
-   102a8:	00f71863          	bne	a4,a5,102b8 <read_keypad+0x150>
-   102ac:	03300793          	li	a5,51
-   102b0:	fef407a3          	sb	a5,-17(s0)
-   102b4:	1380006f          	j	103ec <read_keypad+0x284>
-   102b8:	fef44703          	lbu	a4,-17(s0)
-   102bc:	0d000793          	li	a5,208
-   102c0:	00f71863          	bne	a4,a5,102d0 <read_keypad+0x168>
-   102c4:	05b00793          	li	a5,91
-   102c8:	fef407a3          	sb	a5,-17(s0)
-   102cc:	1200006f          	j	103ec <read_keypad+0x284>
-   102d0:	fef44703          	lbu	a4,-17(s0)
-   102d4:	0b000793          	li	a5,176
-   102d8:	00f71863          	bne	a4,a5,102e8 <read_keypad+0x180>
-   102dc:	05e00793          	li	a5,94
-   102e0:	fef407a3          	sb	a5,-17(s0)
-   102e4:	1080006f          	j	103ec <read_keypad+0x284>
-   102e8:	fef44703          	lbu	a4,-17(s0)
-   102ec:	07000793          	li	a5,112
-   102f0:	0ef71e63          	bne	a4,a5,103ec <read_keypad+0x284>
-   102f4:	01f00793          	li	a5,31
-   102f8:	fef407a3          	sb	a5,-17(s0)
-   102fc:	0f00006f          	j	103ec <read_keypad+0x284>
-   10300:	fee44783          	lbu	a5,-18(s0)
-   10304:	ff040713          	addi	a4,s0,-16
-   10308:	00f707b3          	add	a5,a4,a5
-   1030c:	ff07c703          	lbu	a4,-16(a5)
-   10310:	00b00793          	li	a5,11
-   10314:	06f71263          	bne	a4,a5,10378 <read_keypad+0x210>
-   10318:	fef44703          	lbu	a4,-17(s0)
-   1031c:	0e000793          	li	a5,224
-   10320:	00f71863          	bne	a4,a5,10330 <read_keypad+0x1c8>
-   10324:	07000793          	li	a5,112
-   10328:	fef407a3          	sb	a5,-17(s0)
-   1032c:	0c00006f          	j	103ec <read_keypad+0x284>
-   10330:	fef44703          	lbu	a4,-17(s0)
-   10334:	0d000793          	li	a5,208
-   10338:	00f71863          	bne	a4,a5,10348 <read_keypad+0x1e0>
-   1033c:	07f00793          	li	a5,127
-   10340:	fef407a3          	sb	a5,-17(s0)
-   10344:	0a80006f          	j	103ec <read_keypad+0x284>
-   10348:	fef44703          	lbu	a4,-17(s0)
-   1034c:	0b000793          	li	a5,176
-   10350:	00f71863          	bne	a4,a5,10360 <read_keypad+0x1f8>
-   10354:	07300793          	li	a5,115
-   10358:	fef407a3          	sb	a5,-17(s0)
-   1035c:	0900006f          	j	103ec <read_keypad+0x284>
-   10360:	fef44703          	lbu	a4,-17(s0)
-   10364:	07000793          	li	a5,112
-   10368:	08f71263          	bne	a4,a5,103ec <read_keypad+0x284>
-   1036c:	04e00793          	li	a5,78
-   10370:	fef407a3          	sb	a5,-17(s0)
-   10374:	0780006f          	j	103ec <read_keypad+0x284>
-   10378:	fee44783          	lbu	a5,-18(s0)
-   1037c:	ff040713          	addi	a4,s0,-16
-   10380:	00f707b3          	add	a5,a4,a5
-   10384:	ff07c703          	lbu	a4,-16(a5)
-   10388:	00700793          	li	a5,7
-   1038c:	06f71063          	bne	a4,a5,103ec <read_keypad+0x284>
-   10390:	fef44703          	lbu	a4,-17(s0)
-   10394:	0e000793          	li	a5,224
-   10398:	00f71863          	bne	a4,a5,103a8 <read_keypad+0x240>
-   1039c:	00100793          	li	a5,1
-   103a0:	fef407a3          	sb	a5,-17(s0)
-   103a4:	0480006f          	j	103ec <read_keypad+0x284>
-   103a8:	fef44703          	lbu	a4,-17(s0)
-   103ac:	0d000793          	li	a5,208
-   103b0:	00f71863          	bne	a4,a5,103c0 <read_keypad+0x258>
-   103b4:	07f00793          	li	a5,127
-   103b8:	fef407a3          	sb	a5,-17(s0)
-   103bc:	0300006f          	j	103ec <read_keypad+0x284>
-   103c0:	fef44703          	lbu	a4,-17(s0)
-   103c4:	0b000793          	li	a5,176
-   103c8:	00f71863          	bne	a4,a5,103d8 <read_keypad+0x270>
-   103cc:	00100793          	li	a5,1
-   103d0:	fef407a3          	sb	a5,-17(s0)
-   103d4:	0180006f          	j	103ec <read_keypad+0x284>
-   103d8:	fef44703          	lbu	a4,-17(s0)
-   103dc:	07000793          	li	a5,112
-   103e0:	00f71663          	bne	a4,a5,103ec <read_keypad+0x284>
-   103e4:	03d00793          	li	a5,61
-   103e8:	fef407a3          	sb	a5,-17(s0)
-   103ec:	fef44783          	lbu	a5,-17(s0)
-   103f0:	00078513          	mv	a0,a5
-   103f4:	01c12403          	lw	s0,28(sp)
-   103f8:	02010113          	addi	sp,sp,32
-   103fc:	00008067          	ret
+0001018c <read_keypad>:
+   1018c:	fe010113          	addi	sp,sp,-32
+   10190:	00812e23          	sw	s0,28(sp)
+   10194:	02010413          	addi	s0,sp,32
+   10198:	fe040723          	sb	zero,-18(s0)
+   1019c:	f0000793          	li	a5,-256
+   101a0:	fef42423          	sw	a5,-24(s0)
+   101a4:	00e00793          	li	a5,14
+   101a8:	fef403a3          	sb	a5,-25(s0)
+   101ac:	fee44783          	lbu	a5,-18(s0)
+   101b0:	02079863          	bnez	a5,101e0 <read_keypad+0x54>
+   101b4:	fe842783          	lw	a5,-24(s0)
+   101b8:	fe744703          	lbu	a4,-25(s0)
+   101bc:	00ff7f33          	and	t5,t5,a5
+   101c0:	00ef6f33          	or	t5,t5,a4
+   101c4:	0f0f7793          	andi	a5,t5,240
+   101c8:	fef407a3          	sb	a5,-17(s0)
+   101cc:	fef44703          	lbu	a4,-17(s0)
+   101d0:	0f000793          	li	a5,240
+   101d4:	00f70663          	beq	a4,a5,101e0 <read_keypad+0x54>
+   101d8:	00e00793          	li	a5,14
+   101dc:	fef40723          	sb	a5,-18(s0)
+   101e0:	00d00793          	li	a5,13
+   101e4:	fef403a3          	sb	a5,-25(s0)
+   101e8:	fee44783          	lbu	a5,-18(s0)
+   101ec:	02079863          	bnez	a5,1021c <read_keypad+0x90>
+   101f0:	fe842783          	lw	a5,-24(s0)
+   101f4:	fe744703          	lbu	a4,-25(s0)
+   101f8:	00ff7f33          	and	t5,t5,a5
+   101fc:	00ef6f33          	or	t5,t5,a4
+   10200:	0f0f7793          	andi	a5,t5,240
+   10204:	fef407a3          	sb	a5,-17(s0)
+   10208:	fef44703          	lbu	a4,-17(s0)
+   1020c:	0f000793          	li	a5,240
+   10210:	00f70663          	beq	a4,a5,1021c <read_keypad+0x90>
+   10214:	00d00793          	li	a5,13
+   10218:	fef40723          	sb	a5,-18(s0)
+   1021c:	00b00793          	li	a5,11
+   10220:	fef403a3          	sb	a5,-25(s0)
+   10224:	fee44783          	lbu	a5,-18(s0)
+   10228:	02079863          	bnez	a5,10258 <read_keypad+0xcc>
+   1022c:	fe842783          	lw	a5,-24(s0)
+   10230:	fe744703          	lbu	a4,-25(s0)
+   10234:	00ff7f33          	and	t5,t5,a5
+   10238:	00ef6f33          	or	t5,t5,a4
+   1023c:	0f0f7793          	andi	a5,t5,240
+   10240:	fef407a3          	sb	a5,-17(s0)
+   10244:	fef44703          	lbu	a4,-17(s0)
+   10248:	0f000793          	li	a5,240
+   1024c:	00f70663          	beq	a4,a5,10258 <read_keypad+0xcc>
+   10250:	00b00793          	li	a5,11
+   10254:	fef40723          	sb	a5,-18(s0)
+   10258:	00700793          	li	a5,7
+   1025c:	fef403a3          	sb	a5,-25(s0)
+   10260:	fee44783          	lbu	a5,-18(s0)
+   10264:	02079863          	bnez	a5,10294 <read_keypad+0x108>
+   10268:	fe842783          	lw	a5,-24(s0)
+   1026c:	fe744703          	lbu	a4,-25(s0)
+   10270:	00ff7f33          	and	t5,t5,a5
+   10274:	00ef6f33          	or	t5,t5,a4
+   10278:	0f0f7793          	andi	a5,t5,240
+   1027c:	fef407a3          	sb	a5,-17(s0)
+   10280:	fef44703          	lbu	a4,-17(s0)
+   10284:	0f000793          	li	a5,240
+   10288:	00f70663          	beq	a4,a5,10294 <read_keypad+0x108>
+   1028c:	00700793          	li	a5,7
+   10290:	fef40723          	sb	a5,-18(s0)
+   10294:	fee44783          	lbu	a5,-18(s0)
+   10298:	00079663          	bnez	a5,102a4 <read_keypad+0x118>
+   1029c:	00000793          	li	a5,0
+   102a0:	1b40006f          	j	10454 <read_keypad+0x2c8>
+   102a4:	fee44703          	lbu	a4,-18(s0)
+   102a8:	00e00793          	li	a5,14
+   102ac:	06f71263          	bne	a4,a5,10310 <read_keypad+0x184>
+   102b0:	fef44703          	lbu	a4,-17(s0)
+   102b4:	0e000793          	li	a5,224
+   102b8:	00f71863          	bne	a4,a5,102c8 <read_keypad+0x13c>
+   102bc:	03000793          	li	a5,48
+   102c0:	fef407a3          	sb	a5,-17(s0)
+   102c4:	18c0006f          	j	10450 <read_keypad+0x2c4>
+   102c8:	fef44703          	lbu	a4,-17(s0)
+   102cc:	0d000793          	li	a5,208
+   102d0:	00f71863          	bne	a4,a5,102e0 <read_keypad+0x154>
+   102d4:	06d00793          	li	a5,109
+   102d8:	fef407a3          	sb	a5,-17(s0)
+   102dc:	1740006f          	j	10450 <read_keypad+0x2c4>
+   102e0:	fef44703          	lbu	a4,-17(s0)
+   102e4:	0b000793          	li	a5,176
+   102e8:	00f71863          	bne	a4,a5,102f8 <read_keypad+0x16c>
+   102ec:	07900793          	li	a5,121
+   102f0:	fef407a3          	sb	a5,-17(s0)
+   102f4:	15c0006f          	j	10450 <read_keypad+0x2c4>
+   102f8:	fef44703          	lbu	a4,-17(s0)
+   102fc:	07000793          	li	a5,112
+   10300:	14f71863          	bne	a4,a5,10450 <read_keypad+0x2c4>
+   10304:	07700793          	li	a5,119
+   10308:	fef407a3          	sb	a5,-17(s0)
+   1030c:	1440006f          	j	10450 <read_keypad+0x2c4>
+   10310:	fee44703          	lbu	a4,-18(s0)
+   10314:	00d00793          	li	a5,13
+   10318:	06f71263          	bne	a4,a5,1037c <read_keypad+0x1f0>
+   1031c:	fef44703          	lbu	a4,-17(s0)
+   10320:	0e000793          	li	a5,224
+   10324:	00f71863          	bne	a4,a5,10334 <read_keypad+0x1a8>
+   10328:	03300793          	li	a5,51
+   1032c:	fef407a3          	sb	a5,-17(s0)
+   10330:	1200006f          	j	10450 <read_keypad+0x2c4>
+   10334:	fef44703          	lbu	a4,-17(s0)
+   10338:	0d000793          	li	a5,208
+   1033c:	00f71863          	bne	a4,a5,1034c <read_keypad+0x1c0>
+   10340:	05b00793          	li	a5,91
+   10344:	fef407a3          	sb	a5,-17(s0)
+   10348:	1080006f          	j	10450 <read_keypad+0x2c4>
+   1034c:	fef44703          	lbu	a4,-17(s0)
+   10350:	0b000793          	li	a5,176
+   10354:	00f71863          	bne	a4,a5,10364 <read_keypad+0x1d8>
+   10358:	05e00793          	li	a5,94
+   1035c:	fef407a3          	sb	a5,-17(s0)
+   10360:	0f00006f          	j	10450 <read_keypad+0x2c4>
+   10364:	fef44703          	lbu	a4,-17(s0)
+   10368:	07000793          	li	a5,112
+   1036c:	0ef71263          	bne	a4,a5,10450 <read_keypad+0x2c4>
+   10370:	01f00793          	li	a5,31
+   10374:	fef407a3          	sb	a5,-17(s0)
+   10378:	0d80006f          	j	10450 <read_keypad+0x2c4>
+   1037c:	fee44703          	lbu	a4,-18(s0)
+   10380:	00b00793          	li	a5,11
+   10384:	06f71263          	bne	a4,a5,103e8 <read_keypad+0x25c>
+   10388:	fef44703          	lbu	a4,-17(s0)
+   1038c:	0e000793          	li	a5,224
+   10390:	00f71863          	bne	a4,a5,103a0 <read_keypad+0x214>
+   10394:	07000793          	li	a5,112
+   10398:	fef407a3          	sb	a5,-17(s0)
+   1039c:	0b40006f          	j	10450 <read_keypad+0x2c4>
+   103a0:	fef44703          	lbu	a4,-17(s0)
+   103a4:	0d000793          	li	a5,208
+   103a8:	00f71863          	bne	a4,a5,103b8 <read_keypad+0x22c>
+   103ac:	07f00793          	li	a5,127
+   103b0:	fef407a3          	sb	a5,-17(s0)
+   103b4:	09c0006f          	j	10450 <read_keypad+0x2c4>
+   103b8:	fef44703          	lbu	a4,-17(s0)
+   103bc:	0b000793          	li	a5,176
+   103c0:	00f71863          	bne	a4,a5,103d0 <read_keypad+0x244>
+   103c4:	07300793          	li	a5,115
+   103c8:	fef407a3          	sb	a5,-17(s0)
+   103cc:	0840006f          	j	10450 <read_keypad+0x2c4>
+   103d0:	fef44703          	lbu	a4,-17(s0)
+   103d4:	07000793          	li	a5,112
+   103d8:	06f71c63          	bne	a4,a5,10450 <read_keypad+0x2c4>
+   103dc:	04e00793          	li	a5,78
+   103e0:	fef407a3          	sb	a5,-17(s0)
+   103e4:	06c0006f          	j	10450 <read_keypad+0x2c4>
+   103e8:	fee44703          	lbu	a4,-18(s0)
+   103ec:	00700793          	li	a5,7
+   103f0:	06f71063          	bne	a4,a5,10450 <read_keypad+0x2c4>
+   103f4:	fef44703          	lbu	a4,-17(s0)
+   103f8:	0e000793          	li	a5,224
+   103fc:	00f71863          	bne	a4,a5,1040c <read_keypad+0x280>
+   10400:	00100793          	li	a5,1
+   10404:	fef407a3          	sb	a5,-17(s0)
+   10408:	0480006f          	j	10450 <read_keypad+0x2c4>
+   1040c:	fef44703          	lbu	a4,-17(s0)
+   10410:	0d000793          	li	a5,208
+   10414:	00f71863          	bne	a4,a5,10424 <read_keypad+0x298>
+   10418:	07f00793          	li	a5,127
+   1041c:	fef407a3          	sb	a5,-17(s0)
+   10420:	0300006f          	j	10450 <read_keypad+0x2c4>
+   10424:	fef44703          	lbu	a4,-17(s0)
+   10428:	0b000793          	li	a5,176
+   1042c:	00f71863          	bne	a4,a5,1043c <read_keypad+0x2b0>
+   10430:	00100793          	li	a5,1
+   10434:	fef407a3          	sb	a5,-17(s0)
+   10438:	0180006f          	j	10450 <read_keypad+0x2c4>
+   1043c:	fef44703          	lbu	a4,-17(s0)
+   10440:	07000793          	li	a5,112
+   10444:	00f71663          	bne	a4,a5,10450 <read_keypad+0x2c4>
+   10448:	03d00793          	li	a5,61
+   1044c:	fef407a3          	sb	a5,-17(s0)
+   10450:	fef44783          	lbu	a5,-17(s0)
+   10454:	00078513          	mv	a0,a5
+   10458:	01c12403          	lw	s0,28(sp)
+   1045c:	02010113          	addi	sp,sp,32
+   10460:	00008067          	ret
 
-00010400 <read_mode>:
-   10400:	fe010113          	addi	sp,sp,-32
-   10404:	00812e23          	sw	s0,28(sp)
-   10408:	02010413          	addi	s0,sp,32
-   1040c:	01ff5513          	srli	a0,t5,0x1f
-   10410:	00157793          	andi	a5,a0,1
-   10414:	fef407a3          	sb	a5,-17(s0)
-   10418:	fef44783          	lbu	a5,-17(s0)
-   1041c:	00078513          	mv	a0,a5
-   10420:	01c12403          	lw	s0,28(sp)
-   10424:	02010113          	addi	sp,sp,32
-   10428:	00008067          	ret
+00010464 <read_mode>:
+   10464:	fe010113          	addi	sp,sp,-32
+   10468:	00812e23          	sw	s0,28(sp)
+   1046c:	02010413          	addi	s0,sp,32
+   10470:	01ff5513          	srli	a0,t5,0x1f
+   10474:	00157793          	andi	a5,a0,1
+   10478:	fef407a3          	sb	a5,-17(s0)
+   1047c:	fef44783          	lbu	a5,-17(s0)
+   10480:	00078513          	mv	a0,a5
+   10484:	01c12403          	lw	s0,28(sp)
+   10488:	02010113          	addi	sp,sp,32
+   1048c:	00008067          	ret
 
-0001042c <display1_output>:
-   1042c:	fd010113          	addi	sp,sp,-48
-   10430:	02812623          	sw	s0,44(sp)
-   10434:	03010413          	addi	s0,sp,48
-   10438:	00050793          	mv	a5,a0
-   1043c:	fcf40fa3          	sb	a5,-33(s0)
-   10440:	ffff87b7          	lui	a5,0xffff8
-   10444:	0ff78793          	addi	a5,a5,255 # ffff80ff <__global_pointer$+0xfffe63eb>
-   10448:	fef42623          	sw	a5,-20(s0)
-   1044c:	fdf44783          	lbu	a5,-33(s0)
-   10450:	00879793          	slli	a5,a5,0x8
-   10454:	fef42423          	sw	a5,-24(s0)
-   10458:	fe842783          	lw	a5,-24(s0)
-   1045c:	fec42703          	lw	a4,-20(s0)
-   10460:	00ef7f33          	and	t5,t5,a4
-   10464:	00ff6f33          	or	t5,t5,a5
-   10468:	00000013          	nop
-   1046c:	02c12403          	lw	s0,44(sp)
-   10470:	03010113          	addi	sp,sp,48
-   10474:	00008067          	ret
+00010490 <display1_output>:
+   10490:	fd010113          	addi	sp,sp,-48
+   10494:	02812623          	sw	s0,44(sp)
+   10498:	03010413          	addi	s0,sp,48
+   1049c:	00050793          	mv	a5,a0
+   104a0:	fcf40fa3          	sb	a5,-33(s0)
+   104a4:	ffff87b7          	lui	a5,0xffff8
+   104a8:	0ff78793          	addi	a5,a5,255 # ffff80ff <__global_pointer$+0xfffe6387>
+   104ac:	fef42623          	sw	a5,-20(s0)
+   104b0:	fdf44783          	lbu	a5,-33(s0)
+   104b4:	00879793          	slli	a5,a5,0x8
+   104b8:	fef42423          	sw	a5,-24(s0)
+   104bc:	fe842783          	lw	a5,-24(s0)
+   104c0:	fec42703          	lw	a4,-20(s0)
+   104c4:	00ef7f33          	and	t5,t5,a4
+   104c8:	00ff6f33          	or	t5,t5,a5
+   104cc:	00000013          	nop
+   104d0:	02c12403          	lw	s0,44(sp)
+   104d4:	03010113          	addi	sp,sp,48
+   104d8:	00008067          	ret
 
-00010478 <display_mode>:
-   10478:	fd010113          	addi	sp,sp,-48
-   1047c:	02812623          	sw	s0,44(sp)
-   10480:	03010413          	addi	s0,sp,48
-   10484:	00050793          	mv	a5,a0
-   10488:	fcf40fa3          	sb	a5,-33(s0)
-   1048c:	fe0007b7          	lui	a5,0xfe000
-   10490:	fff78793          	addi	a5,a5,-1 # fdffffff <__global_pointer$+0xfdfee2eb>
-   10494:	fef42623          	sw	a5,-20(s0)
-   10498:	fdf44783          	lbu	a5,-33(s0)
-   1049c:	fec42703          	lw	a4,-20(s0)
-   104a0:	00ef7f33          	and	t5,t5,a4
-   104a4:	01979513          	slli	a0,a5,0x19
-   104a8:	00af6f33          	or	t5,t5,a0
-   104ac:	00000013          	nop
-   104b0:	02c12403          	lw	s0,44(sp)
-   104b4:	03010113          	addi	sp,sp,48
-   104b8:	00008067          	ret
+000104dc <display_mode>:
+   104dc:	fd010113          	addi	sp,sp,-48
+   104e0:	02812623          	sw	s0,44(sp)
+   104e4:	03010413          	addi	s0,sp,48
+   104e8:	00050793          	mv	a5,a0
+   104ec:	fcf40fa3          	sb	a5,-33(s0)
+   104f0:	fe0007b7          	lui	a5,0xfe000
+   104f4:	fff78793          	addi	a5,a5,-1 # fdffffff <__global_pointer$+0xfdfee287>
+   104f8:	fef42623          	sw	a5,-20(s0)
+   104fc:	fdf44783          	lbu	a5,-33(s0)
+   10500:	fec42703          	lw	a4,-20(s0)
+   10504:	00ef7f33          	and	t5,t5,a4
+   10508:	01979513          	slli	a0,a5,0x19
+   1050c:	00af6f33          	or	t5,t5,a0
+   10510:	00000013          	nop
+   10514:	02c12403          	lw	s0,44(sp)
+   10518:	03010113          	addi	sp,sp,48
+   1051c:	00008067          	ret
 
-000104bc <read_delay>:
-   104bc:	fe010113          	addi	sp,sp,-32
-   104c0:	00812e23          	sw	s0,28(sp)
-   104c4:	02010413          	addi	s0,sp,32
-   104c8:	01df5513          	srli	a0,t5,0x1d
-   104cc:	00157793          	andi	a5,a0,1
-   104d0:	fef407a3          	sb	a5,-17(s0)
-   104d4:	fef44783          	lbu	a5,-17(s0)
-   104d8:	00078513          	mv	a0,a5
-   104dc:	01c12403          	lw	s0,28(sp)
-   104e0:	02010113          	addi	sp,sp,32
-   104e4:	00008067          	ret
+00010520 <read_delay>:
+   10520:	fe010113          	addi	sp,sp,-32
+   10524:	00812e23          	sw	s0,28(sp)
+   10528:	02010413          	addi	s0,sp,32
+   1052c:	01df5513          	srli	a0,t5,0x1d
+   10530:	00157793          	andi	a5,a0,1
+   10534:	fef407a3          	sb	a5,-17(s0)
+   10538:	fef44783          	lbu	a5,-17(s0)
+   1053c:	00078513          	mv	a0,a5
+   10540:	01c12403          	lw	s0,28(sp)
+   10544:	02010113          	addi	sp,sp,32
+   10548:	00008067          	ret
 
-000104e8 <read_next>:
-   104e8:	fe010113          	addi	sp,sp,-32
-   104ec:	00812e23          	sw	s0,28(sp)
-   104f0:	02010413          	addi	s0,sp,32
-   104f4:	01bf5513          	srli	a0,t5,0x1b
-   104f8:	00157793          	andi	a5,a0,1
-   104fc:	fef407a3          	sb	a5,-17(s0)
-   10500:	fef44783          	lbu	a5,-17(s0)
-   10504:	00078513          	mv	a0,a5
-   10508:	01c12403          	lw	s0,28(sp)
-   1050c:	02010113          	addi	sp,sp,32
-   10510:	00008067          	ret
+0001054c <read_next>:
+   1054c:	fe010113          	addi	sp,sp,-32
+   10550:	00812e23          	sw	s0,28(sp)
+   10554:	02010413          	addi	s0,sp,32
+   10558:	01bf5513          	srli	a0,t5,0x1b
+   1055c:	00157793          	andi	a5,a0,1
+   10560:	fef407a3          	sb	a5,-17(s0)
+   10564:	fef44783          	lbu	a5,-17(s0)
+   10568:	00078513          	mv	a0,a5
+   1056c:	01c12403          	lw	s0,28(sp)
+   10570:	02010113          	addi	sp,sp,32
+   10574:	00008067          	ret
  ```
  
  ### Unique instrcutions in assembly code
@@ -683,7 +1459,6 @@ lui
 ret
 bnez
 andi
-
  ```
  
  ### References
@@ -695,4 +1470,6 @@ andi
 3. https://www.circuitstoday.com/interfacing-seven-segment-display-to-8051
 
 4. https://github.com/riscv-collab/riscv-gnu-toolchain
+
+5. https://github.com/riscv-software-src/riscv-isa-sim
 
