@@ -303,7 +303,7 @@ int read_keypad(void)
 	//unsigned char row[5]={14,13,11,7,0};
 	//int row;
 	int i=0;
-	int mask=0xFFFFFF00;
+	int mask=0xFFFFFFF0;
 	
 	
 	//row 0
