@@ -1687,9 +1687,9 @@ ret
  
  Then, we provide keypad_col=4'b1101 when keypad_row=4'b1101 to simulate pressing of button 5. Then we, observe hex code 0x5B in 7 segment display corresponsing to digit 5.
  
- We press next button to make controller store current character in memory as shown.
+ We press next button to make controller store each character in memory as shown.
  
- Then, when dont press any button we see than controller keeps on scanning for button press and finds none as keypad_col=4'b1111;
+ Then, when we dont press any button we see that controller keeps on scanning for button press and finds none as keypad_col=4'b1111;
  
  Finally, we press * button to indicate null character but will not be displayed in 7 segment. For this keypad_col=4'b1110 and keypad_row=4'b0111.
  
