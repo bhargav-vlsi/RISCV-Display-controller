@@ -1401,7 +1401,7 @@ Disassembly of section .text:
    103f0:	00812e23          	sw	s0,28(sp)
    103f4:	02010413          	addi	s0,sp,32
    103f8:	fe042423          	sw	zero,-24(s0)
-   103fc:	f0000793          	li	a5,-256
+   103fc:	ff000793          	li	a5,-16
    10400:	fef42223          	sw	a5,-28(s0)
    10404:	fe842783          	lw	a5,-24(s0)
    10408:	02079663          	bnez	a5,10434 <read_keypad+0x48>
@@ -1674,6 +1674,30 @@ jal
 ori
 ret
  ```
+ 
+ ### Gtkwave simulation
+ 
+ ![waveform](./Images/waveform.png)
+ 
+ Initially, we keep input_display=1 for taking inputs from keypad. 7 segment displays hypen (hex code 0x01) as shown. 
+ 
+ Then, we provide keypad_col=4'b1110 when keypad_row=4'b1110 to simulate pressing of button 1. Then we, observe hex code 0x30 in 7 segment display corresponsing to digit 1.
+ 
+ Then, we provide keypad_col=4'b1101 when keypad_row=4'b1110 to simulate pressing of button 2. Then we, observe hex code 0x6D in 7 segment display corresponsing to digit 2.
+ 
+ Then, we provide keypad_col=4'b1101 when keypad_row=4'b1101 to simulate pressing of button 5. Then we, observe hex code 0x5B in 7 segment display corresponsing to digit 5.
+ 
+ We press next button to make controller store current character in memory as shown.
+ 
+ Finally, we press * button to indicate null character but will not be displayed in 7 segment. For this keypad_col=4'b1110 and keypad_row=4'b0111.
+ 
+ Then, we make input_display=0 to activate display mode.
+ 
+ In this mode, the previously stored characters are displayed continuously with some delay indicated by delay pin. The characters 1,2 & 5 are displayed continuously as shown.
+ 
+ Mode led is used to indicate whether it is input_mode or display_mode. Mode led=1 when input mode, else it is 0.
+ 
+ 
  
  ### References
  
