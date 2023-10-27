@@ -241,7 +241,7 @@ Disassembly of section .text:
    103f0:	00812e23          	sw	s0,28(sp)
    103f4:	02010413          	addi	s0,sp,32
    103f8:	fe042423          	sw	zero,-24(s0)
-   103fc:	f0000793          	li	a5,-256
+   103fc:	f0000793          	li	a5,-16
    10400:	fef42223          	sw	a5,-28(s0)
    10404:	fe842783          	lw	a5,-24(s0)
    10408:	02079663          	bnez	a5,10434 <read_keypad+0x48>
