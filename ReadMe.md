@@ -1675,30 +1675,107 @@ ori
 ret
  ```
  
- ### Gtkwave simulation
+ ### Gtkwave RTL simulation
  
  ![waveform](./Images/waveform.png)
  
+ 
+  ![display_hypen](./Images/display_hypen.png)
  Initially, we keep input_display=1 for taking inputs from keypad. 7 segment displays hypen (hex code 0x01) as shown. 
  
+ ![keypad_1](./Images/keypad_1.png)
  Then, we provide keypad_col=4'b1110 when keypad_row=4'b1110 to simulate pressing of button 1. Then we, observe hex code 0x30 in 7 segment display corresponsing to digit 1.
  
+ ![keypad_2](./Images/keypad_2.png)
  Then, we provide keypad_col=4'b1101 when keypad_row=4'b1110 to simulate pressing of button 2. Then we, observe hex code 0x6D in 7 segment display corresponsing to digit 2.
  
+ ![keypad_5](./Images/keypad_5.png)
  Then, we provide keypad_col=4'b1101 when keypad_row=4'b1101 to simulate pressing of button 5. Then we, observe hex code 0x5B in 7 segment display corresponsing to digit 5.
  
- We press next button to make controller store each character in memory as shown.
+ ![keypad_none](./Images/keypad_none.png)
+ We press next button to make controller store each character in memory as shown. Then, when we dont press any button we see that controller keeps on scanning for button press and finds none as keypad_col=4'b1111; Finally, we press * button to indicate null character but will not be displayed in 7 segment. For this keypad_col=4'b1110 and keypad_row=4'b0111.
  
- Then, when we dont press any button we see that controller keeps on scanning for button press and finds none as keypad_col=4'b1111;
- 
- Finally, we press * button to indicate null character but will not be displayed in 7 segment. For this keypad_col=4'b1110 and keypad_row=4'b0111.
- 
+ ![display_mode](./Images/display_mode.png)
  Then, we make input_display=0 to activate display mode.
  
  In this mode, the previously stored characters are displayed continuously with some delay indicated by delay pin. The characters 1,2 & 5 are displayed continuously as shown.
  
  Mode led is used to indicate whether it is input_mode or display_mode. Mode led=1 when input mode, else it is 0.
  
+ 
+ ### Gate level synthesis & simulation
+ 
+ 
+  
+  Steps to follow to peform GLS:
+  
+  1. Comment out the data & instruction memory modules in processor.v and make sure writing_inst_done=0 for uart.
+  
+  2. Use following yosyscommands to synthesize gate level netlist with uart module for ASIC flow. I have kept the required lib & sram verilog files in lib folder. Since, I have more than 256 instructions, I use 2kb SRAM library files and verilog modules.
+  
+  ```
+  yosys> read_liberty -lib ./lib/sky130_fd_sc_hd__tt_025C_1v80_512.lib
+  yosys> read_verilog processor.v
+  yosys> synth -top wrapper
+  yosys> dfflibmap -liberty ./lib/sky130_fd_sc_hd__tt_025C_1v80_512.lib
+  yosys> abc -liberty ./lib/sky130_fd_sc_hd__tt_025C_1v80_512.lib
+  yosys> write_verilog synth_processor_asic.v
+  ```
+  
+  We see the SRAM macro being used in synthesizing processor.
+  
+  ![synth_processor](./Images/synth_processor.png)
+  
+  We verify UART functionality in this netlist which is used in further ASIC flow in openlane.
+  
+  3. Now to perform GLS we make sure in processor.v that writing_inst_done=1 to bypass uart during simulation.
+  
+  4. Use above said yosys commands to synthesize GLS simulation netlist. I have kept the required lib & sram verilog files in lib folder. Since, I have more than 256 instructions, I use 2kb SRAM library files and verilog modules.
+  
+  ```
+  yosys> read_liberty -lib ./lib/sky130_fd_sc_hd__tt_025C_1v80_512.lib
+  yosys> read_verilog processor.v
+  yosys> synth -top wrapper
+  yosys> dfflibmap -liberty ./lib/sky130_fd_sc_hd__tt_025C_1v80_512.lib
+  yosys> abc -liberty ./lib/sky130_fd_sc_hd__tt_025C_1v80_512.lib
+  yosys> write_verilog synth_processor_gls.v
+  ```
+  
+  
+  We perform GLS using following iverilog command by including sram modules and related sky130 primitives.
+  
+  ```
+  verilog -o output_gls testbench.v synth_processor_gls.v ./lib/sky130_sram_1kbyte_1rw1r_32x512_8.v ./lib/sky130_fd_sc_hd.v ./lib/primitives.v 
+  ./output_gls
+  ```
+  
+  ![waveform_gls](./Images/waveform_gls.png)
+  
+   ![display_hypen_gls](./Images/display_hypen_gls.png)
+ Initially, we keep input_display=1 for taking inputs from keypad. 7 segment displays hypen (hex code 0x01) as shown. 
+ 
+ ![keypad_1_gls](./Images/keypad_1_gls.png)
+ Then, we provide keypad_col=4'b1110 when keypad_row=4'b1110 to simulate pressing of button 1. Then we, observe hex code 0x30 in 7 segment display corresponsing to digit 1.
+ 
+ ![keypad_2_gls](./Images/keypad_2_gls.png)
+ Then, we provide keypad_col=4'b1101 when keypad_row=4'b1110 to simulate pressing of button 2. Then we, observe hex code 0x6D in 7 segment display corresponsing to digit 2.
+ 
+ ![keypad_5_gls](./Images/keypad_5_gls.png)
+ Then, we provide keypad_col=4'b1101 when keypad_row=4'b1101 to simulate pressing of button 5. Then we, observe hex code 0x5B in 7 segment display corresponsing to digit 5.
+ 
+ ![keypad_none_gls](./Images/keypad_none_gls.png)
+ We press next button to make controller store each character in memory as shown. Then, when we dont press any button we see that controller keeps on scanning for button press and finds none as keypad_col=4'b1111; Finally, we press * button to indicate null character but will not be displayed in 7 segment. For this keypad_col=4'b1110 and keypad_row=4'b0111.
+ 
+ ![display_mode_gls](./Images/display_mode_gls.png)
+ Then, we make input_display=0 to activate display mode.
+ 
+ In this mode, the previously stored characters are displayed continuously with some delay indicated by delay pin. The characters 1,2 & 5 are displayed continuously as shown.
+ 
+ Mode led is used to indicate whether it is input_mode or display_mode. Mode led=1 when input mode, else it is 0.
+   
+   Conclusion: We see that the gate level simulation matches RTL simulation and functionality is verified.
+  
+
  
  
  ### References
