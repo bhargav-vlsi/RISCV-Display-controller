@@ -1,6 +1,7 @@
 # RISCV based display controller
 
-### RISCV GNU tool chain
+<details>
+<summary>RISCV GNU tool chain</summary>
 
 RISCV GNU tool chain is a C & C++ cross compiler. It has two modes: ELF/Newlib toolchain and Linux-ELF/glibc toolchain. We are using ELF/Newlib toolchain.
 
@@ -12,7 +13,10 @@ Following are tools required to compile & execute the application:
 
 2. Spike simulator - Spike is a functional RISC-V ISA simulator that implements a functional model of one or more RISC-V harts. [RISCV-SPIKE](https://github.com/riscv-software-src/riscv-isa-sim.git).
 
-### RISCV 32 bit compiler installation.
+</details>
+
+<details>
+<summary>RISCV 32 bit compiler installation</summary>
 
 ```
 sudo apt install libc6-dev
@@ -29,17 +33,23 @@ Access the riscv32-unknown-elf-gcc inside bin folder of riscv32-toolchain folder
 ```
 /home/bhargav/riscv32-toolchain/bin/riscv32-unknown-elf-gcc --version
 ```
+</details>
 
 
-### Display controller
+<details>
+<summary>Display controller</summary>
 
 Digital display boards, often referred to as electronic display boards, are devices used to visually convey information, data, or messages digitally. They are versatile tools employed in various settings for displaying a wide range of content. In this scenario, we are developing simple display board where it display board contains 3 7-segment modules and a keypad matrix. The system accepts input from keypad matrix to accept message and displays the scrolling text.
+</details>
 
-### Block diagram
+<details>
+<summary>Block diagram</summary>
 
 ![block_diagram](./Images/Block_diagram.png)
+</details>
 
-### Functionality
+<details>
+<summary>Functionality</summary>
 
 The system has two important components: Keypad matrix and 7 segment display.The system has a push button (Display/Input mode) that tells whether it accept input from keypad matrix or continue displaying stored text. The system display each character at a time. Note that some letters such as K (K), M (M), V (V), W (W), X (X), and Z (Z) are completely unrecognizable by most people. We try to achieve simple scrolling effect. Shift each letter to left to accomodate entire message. After each word, all display modules is blank for sometime and again starts to display next part of message. For this project, we display only characters available in keypad. We can modify the code such that we can multiplex4 characters for each button of keypad and accomdate alphabets.
 
@@ -47,12 +57,16 @@ Delay circuit is a oscillator that produces square wave of period of 1.5s. With 
 
 
 ![7_segment](./Images/7_segment.png)
+</details>
 
-### Flowchart
+<details>
+<summary>Flowchart</summary>
 
 ![Flowchart](./Images/Flowchart.png)
+</details>
 
-### Register architecture of x30 for GPIOs:
+<details>
+<summary>Register architecture of x30 for GPIOs</summary>
 
 ![GPIO](./Images/GPIO.png)
 
@@ -69,9 +83,10 @@ x30[27] is next input which is used as enter button to store each character we e
 x30[29] is delay pin where it accepts signal from 555 timer.
 
 x30[31] is input/display mode input pin.
+</details>
 
-
-### Binary codes for keypad 
+<details>
+<summary>Binary codes for keypad</summary> 
 
 ![Keypad](./Images/Keypad.png)
 
@@ -95,9 +110,10 @@ For row wise scanning process, we should put values as follows and then read col
 | 0 | Put 0111 | read 1101 |
 | - | Put 0111 | read 1011 |
 | D | Put 0111 | read 0111 |
+</details>
 
-
-### 7 segment hex code
+<details>
+<summary>7 segment hex code</summary> 
 
 MSB in x30[14:8] is a and LSB in x30[14:8] is g segments in 7 segment display pins.
 
@@ -118,9 +134,10 @@ MSB in x30[14:8] is a and LSB in x30[14:8] is g segments in 7 segment display pi
 | C | 1001110 |
 | D | 0111101 |
 | - | 0000001 |
+</details>
 
-
-### C program
+</details>
+<summary>C program</summary> 
 
 ```
 int read_keypad(void);
@@ -505,8 +522,10 @@ int read_next(void)
 }
 
 ```
+</details>
 
-### Debugging & Simulation
+<details>
+<summary>Debugging & Simulation</summary>
 
 ```
 #include<stdio.h>
@@ -1153,15 +1172,15 @@ Entering display_mode
 display mode
 Entering read_delay
 ```
+</details>
 
 
+<details>
+<summary>Assembly code</summary>
 
-### Assembly code
 
 ```
 display_controller.out:     file format elf32-littleriscv
-
-
 Disassembly of section .text:
 
 00010054 <main>:
@@ -1646,7 +1665,10 @@ Disassembly of section .text:
    1079c:	00008067          	ret
  ```
  
- ### Unique instrcutions in assembly code
+ </details>
+ 
+<details>
+<summary>Unique instrcutions in assembly code</summary>
  
  We use python script to count the unique instructions used in this application.
  
@@ -1674,8 +1696,10 @@ jal
 ori
 ret
  ```
- 
- ### Gtkwave RTL simulation
+ </details>
+  
+<details>
+<summary>Gtkwave RTL simulation</summary>
  
  ![waveform](./Images/waveform.png)
  
@@ -1701,9 +1725,10 @@ ret
  In this mode, the previously stored characters are displayed continuously with some delay indicated by delay pin. The characters 1,2 & 5 are displayed continuously as shown.
  
  Mode led is used to indicate whether it is input_mode or display_mode. Mode led=1 when input mode, else it is 0.
- 
- 
- ### Gate level synthesis & simulation
+ </details>
+
+<details> 
+<summary>Gate level synthesis & simulation</summary>
  
  
   
@@ -1774,11 +1799,11 @@ ret
  Mode led is used to indicate whether it is input_mode or display_mode. Mode led=1 when input mode, else it is 0.
    
    Conclusion: We see that the gate level simulation matches RTL simulation and functionality is verified.
-  
+ </details>
 
  
- 
- ### References
+ <details>
+<summary>References</summary>
  
 1. https://github.com/SakethGajawada/RISCV_GNU
  
@@ -1789,4 +1814,5 @@ ret
 4. https://github.com/riscv-collab/riscv-gnu-toolchain
 
 5. https://github.com/riscv-software-src/riscv-isa-sim
+</details>
 
