@@ -1803,9 +1803,9 @@ ret
 
 <details>
 <summary>Acknowledgement</summary>
- 1. Kunal Ghosh, VSD Corp. Pvt. Ltd.
+1. Kunal Ghosh, VSD Corp. Pvt. Ltd.
  
- 2. Mayank Kabra (Founder, Chipcron Pvt. Ltd.)
+2. Mayank Kabra (Founder, Chipcron Pvt. Ltd.)
 Mayank Kabra
 </details>
  
