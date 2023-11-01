@@ -1801,6 +1801,12 @@ ret
    Conclusion: We see that the gate level simulation matches RTL simulation and functionality is verified.
  </details>
 
+<details>
+<summary>Acknowledgement</summary>
+ 1. Kunal Ghosh, VSD Corp. Pvt. Ltd.
+ 2. Mayank Kabra (Founder, Chipcron Pvt. Ltd.)
+Mayank Kabra
+</details>
  
  <details>
 <summary>References</summary>
