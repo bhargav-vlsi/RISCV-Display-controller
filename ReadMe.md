@@ -1802,6 +1802,327 @@ ret
  </details>
 
 <details>
+<summary>Physical design using openlane</summary>
+
+We have following ASIC flow:
+
+![Asic_flow](./Images/Asic_flow.png)
+
+1. Synthesis: Converts RTL code to gate level netlist from standard cell libraries.
+
+2. Floor & power planning: Decides partition between different system blocks and places I/O pads. We place power rails to provide power to various components of system.
+
+3. PLacement: We place standard cells from netlist on decided floor plan.
+
+4. Clock tree synthesis: We create a clock distribution network to deliver clock signals sequential part of system.
+
+5. Routing: Interconnection of blocks using metal layers.
+
+6. Final verification: We perform DRC-design rule check, Layout vs schematic check, Static timing analysis.
+
+</details>
+
+
+<details>
+<summary>OpenLane flow for display Controller application</summary>
+We follow below steps to invoke the tool.
+
+![openlane](./Images/openlane.png)
+
+Go to openlane folder created in home folder.
+```
+sudo make mount 
+```
+
+The following command creates a new design folder and default config.json file. We edit the parameters of cnfig.json file corresponding to our application.
+
+```
+/flow.tcl -design display_controller -init_design_config -add_to_designs
+```
+
+![design_folder](./Images/design_folder.png)
+
+
+We place our design file inside src folder and have following structure.
+
+This is a typical structure for a design folder as we go through openlane ASIC RTL-to-GDS flow:
+
+```
+designs/display_controller
+├── config.json
+├── runs
+│   └── RUN_<DATE_TIME>
+│       ├── cmds.log
+│       ├── config.json
+│       ├── logs
+│       ├── openlane.log
+│       ├── OPENLANE_VERSION
+│       ├── PDK_SOURCES
+│       ├── reports
+│       ├── results
+│       ├── runtime.yaml
+│       ├── tmp
+│       └── warnings.log
+└── src
+    └── processor_asic.v
+```
+
+
+Below represents configuration variables set for my project openlane flow.
+```
+{
+    "DESIGN_NAME": "display_controller",
+    "VERILOG_FILES": "dir::src/processor.v",
+    "CLOCK_PORT": "clk",
+    "CLOCK_NET": "clk",
+    "GLB_RESIZER_TIMING_OPTIMIZATIONS": true,
+    "CLOCK_PERIOD": 60,
+    "GRT_ANT_ITERS":20,
+    "GRT_ADJUSTMENT":0.1,
+    "FP_SIZING": "relative",
+    "PL_TARGET_DENSITY": 0.31,
+    "DIODE_PADDING" : 1, 
+    "SYNTH_NO_FLAT" : 1, 
+    "DESIGN_IS_CORE": 1,
+    "SYNTH_STRATEGY" : "AREA 1", 
+    "GRT_MACRO_EXTENSION" : 0,
+    "PL_MACRO_HALO" : "600 600", 
+    "PL_MACRO_CHANNEL" : "600 600",
+    "DRT_OPT_ITERS":80,
+    "RUN_HEURISTIC_DIODE_INSERTION" : 5, 
+    "MACRO_PLACEMENT_CFG": "dir::macro_placement.cfg",
+    "FP_PDN_ENABLE_RAILS" : 1, 
+    "GRT_OVERFLOW_ITERS" : 150, 
+    "FP_PDN_CORE_RING" : 1 ,
+    "VDD_NETS": ["vccd1", "VPWR", "VPB"],
+    "GND_NETS": ["vssd1", "VGND", "VNB"],
+    "EXTRA_LEFS": "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8.lef",
+    "EXTRA_GDS_FILES": "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8.gds",
+    "EXTRA_LIBS": "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib",
+    "BASE_SDC_FILE":"dir::src/base.sdc",
+    "pdk::sky130*": {
+        "FP_CORE_UTIL": 50,
+        "scl::sky130_fd_sc_hd": {
+            "FP_CORE_UTIL": 50
+        }
+    },
+    
+    "LIB_SYNTH": "dir::src/sky130_fd_sc_hd__tt_025C_1v80.lib",
+    "LIB_FASTEST": "dir::src/sky130_fd_sc_hd__ff_100C_1v65.lib",
+    "LIB_SLOWEST": "dir::src/sky130_fd_sc_hd__ss_100C_1v60.lib",
+    "LIB_TYPICAL": "dir::src/sky130_fd_sc_hd__tt_025C_1v80.lib"
+
+
+}
+```
+
+
+## Synthesis
+
+```
+run_synthesis
+```
+
+```
+
+74. Printing statistics.
+
+=== display_controller ===
+
+   Number of wires:              11389
+   Number of wire bits:          11410
+   Number of public wires:       11389
+   Number of public wire bits:   11410
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              11273
+     sky130_fd_sc_hd__a2111o_2     370
+     sky130_fd_sc_hd__a2111oi_2      5
+     sky130_fd_sc_hd__a211o_2       76
+     sky130_fd_sc_hd__a211oi_2       5
+     sky130_fd_sc_hd__a21bo_2       14
+     sky130_fd_sc_hd__a21boi_2       3
+     sky130_fd_sc_hd__a21o_2       122
+     sky130_fd_sc_hd__a21oi_2       55
+     sky130_fd_sc_hd__a221o_2      786
+     sky130_fd_sc_hd__a221oi_2     304
+     sky130_fd_sc_hd__a22o_2       282
+     sky130_fd_sc_hd__a22oi_2       21
+     sky130_fd_sc_hd__a2bb2o_2     297
+     sky130_fd_sc_hd__a311o_2        4
+     sky130_fd_sc_hd__a31o_2        42
+     sky130_fd_sc_hd__a31oi_2        4
+     sky130_fd_sc_hd__a32o_2        64
+     sky130_fd_sc_hd__a41o_2         5
+     sky130_fd_sc_hd__a41oi_2        1
+     sky130_fd_sc_hd__and2_2       996
+     sky130_fd_sc_hd__and2b_2      287
+     sky130_fd_sc_hd__and3_2      1219
+     sky130_fd_sc_hd__and3b_2       12
+     sky130_fd_sc_hd__and4_2        27
+     sky130_fd_sc_hd__and4b_2       26
+     sky130_fd_sc_hd__and4bb_2      24
+     sky130_fd_sc_hd__buf_1       2466
+     sky130_fd_sc_hd__buf_2         74
+     sky130_fd_sc_hd__conb_1        22
+     sky130_fd_sc_hd__dfxtp_2     1297
+     sky130_fd_sc_hd__inv_2         79
+     sky130_fd_sc_hd__mux2_2       254
+     sky130_fd_sc_hd__mux4_2        41
+     sky130_fd_sc_hd__nand2_2      242
+     sky130_fd_sc_hd__nand3_2        7
+     sky130_fd_sc_hd__nand3b_2       6
+     sky130_fd_sc_hd__nand4_2        4
+     sky130_fd_sc_hd__nor2_2       187
+     sky130_fd_sc_hd__nor2b_2        7
+     sky130_fd_sc_hd__nor3_2         7
+     sky130_fd_sc_hd__nor3b_2        4
+     sky130_fd_sc_hd__nor4_2         6
+     sky130_fd_sc_hd__nor4b_2       11
+     sky130_fd_sc_hd__o2111a_2       3
+     sky130_fd_sc_hd__o211a_2      766
+     sky130_fd_sc_hd__o211ai_2       1
+     sky130_fd_sc_hd__o21a_2        55
+     sky130_fd_sc_hd__o21ai_2       45
+     sky130_fd_sc_hd__o21ba_2        4
+     sky130_fd_sc_hd__o221a_2       34
+     sky130_fd_sc_hd__o221ai_2       1
+     sky130_fd_sc_hd__o22a_2        23
+     sky130_fd_sc_hd__o22ai_2        3
+     sky130_fd_sc_hd__o2bb2a_2      11
+     sky130_fd_sc_hd__o2bb2ai_2      1
+     sky130_fd_sc_hd__o311a_2        6
+     sky130_fd_sc_hd__o31a_2        43
+     sky130_fd_sc_hd__o31ai_2        3
+     sky130_fd_sc_hd__o32a_2        24
+     sky130_fd_sc_hd__or2_2        182
+     sky130_fd_sc_hd__or2b_2        17
+     sky130_fd_sc_hd__or3_2         43
+     sky130_fd_sc_hd__or3b_2        17
+     sky130_fd_sc_hd__or4_2        149
+     sky130_fd_sc_hd__or4b_2        14
+     sky130_fd_sc_hd__or4bb_2        3
+     sky130_fd_sc_hd__xnor2_2       32
+     sky130_fd_sc_hd__xor2_2        26
+     sky130_sram_2kbyte_1rw1r_32x512_8      2
+
+   Chip area for module '\display_controller': 676655.124000
+```
+
+![synthesis](./Images/synthesis.png)
+
+## Floorplan
+
+```
+run_floorplan
+```
+![floorplan](./Images/floorplan.png)
+
+## Placement
+
+```
+run_placement
+```
+![placement](./Images/placement.png)
+
+## Clock Tree Synthesis
+
+```
+run_cts
+```
+
+![cts](./Images/cts.png)
+
+## Power Distribution Network
+
+```
+gen_pdn
+```
+
+![gen_pdn](./Images/gen_pdn.png)
+
+## Routing
+
+```
+run_routing
+```
+
+![routing](./Images/routing.png)
+
+## Layout
+
+```
+magic -T <technology-file> read lef <lef-file> read def <def-file>
+```
+
+![layout](./Images/layout.png)
+
+# Reports
+
+```
+===========================================================================
+ report_power
+============================================================================
+======================= Typical Corner ===================================
+
+Group                  Internal  Switching    Leakage      Total
+                          Power      Power      Power      Power (Watts)
+----------------------------------------------------------------
+Sequential             9.27e-04   3.49e-05   1.10e-08   9.62e-04  25.7%
+Combinational          1.12e-03   6.64e-04   5.49e-08   1.79e-03  47.8%
+Macro                  9.21e-04   7.10e-07   7.09e-05   9.92e-04  26.5%
+Pad                    0.00e+00   0.00e+00   0.00e+00   0.00e+00   0.0%
+----------------------------------------------------------------
+Total                  2.97e-03   6.99e-04   7.10e-05   3.74e-03 100.0%
+                          79.4%      18.7%       1.9%
+```
+
+```
+===========================================================================
+report_clock_skew
+============================================================================
+Clock clk
+Latency      CRPR       Skew
+top_inst.reg_file._11459_/CLK ^
+   0.87
+top_inst.pc_controller._319_/CLK ^
+   0.55      0.00       0.32
+```
+
+```
+===========================================================================
+report_design_area
+============================================================================
+Design area 735430 u^2 54% utilization.
+```
+
+```
+===========================================================================
+report_tns
+============================================================================
+tns 0.00
+
+===========================================================================
+report_wns
+============================================================================
+wns 0.00
+
+===========================================================================
+report_worst_slack -max (Setup)
+============================================================================
+worst slack 16.44
+
+===========================================================================
+report_worst_slack -min (Hold)
+============================================================================
+worst slack 0.14
+```
+
+
+</details>
+
+<details>
 <summary>Acknowledgement</summary>
 
 1. Kunal Ghosh, VSD Corp. Pvt. Ltd.
@@ -1822,5 +2143,7 @@ ret
 4. https://github.com/riscv-collab/riscv-gnu-toolchain
 
 5. https://github.com/riscv-software-src/riscv-isa-sim
+
+6. https://openlane.readthedocs.io/
 </details>
 
