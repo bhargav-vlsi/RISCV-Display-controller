@@ -1876,30 +1876,34 @@ Below represents configuration variables set for my project openlane flow.
     "CLOCK_PORT": "clk",
     "CLOCK_NET": "clk",
     "GLB_RESIZER_TIMING_OPTIMIZATIONS": true,
-    "CLOCK_PERIOD": 60,
-    "GRT_ANT_ITERS":20,
-    "GRT_ADJUSTMENT":0.1,
-    "FP_SIZING": "relative",
-    "PL_TARGET_DENSITY": 0.31,
+    "CLOCK_PERIOD": 40,
+    "FP_SIZING": "absolute",
+    "DIE_AREA": "0 0 1800 1100",
+    "FP_IO_MODE":1,
+    "PL_TARGET_DENSITY": 0.3,
     "DIODE_PADDING" : 1, 
     "SYNTH_NO_FLAT" : 1, 
     "DESIGN_IS_CORE": 1,
-    "SYNTH_STRATEGY" : "AREA 1", 
+    "SYNTH_STRATEGY" : "AREA 0", 
     "GRT_MACRO_EXTENSION" : 0,
-    "PL_MACRO_HALO" : "600 600", 
-    "PL_MACRO_CHANNEL" : "600 600",
-    "DRT_OPT_ITERS":80,
-    "RUN_HEURISTIC_DIODE_INSERTION" : 5, 
+    "PL_MACRO_HALO" : "700 700", 
+    "PL_MACRO_CHANNEL" : "700 700",
+    "RUN_HEURISTIC_DIODE_INSERTION" : 1, 
+    "MAX_FANOUT_CONSTRAINT":120,
+    "GLB_RESIZER_HOLD_SLACK_MARGIN" : 0.15,
+    "PL_RESIZER_SETUP_SLACK_MARGIN" : 0.15,
+    "SYNTH_TIMING_DERATE" : 0.15,
     "MACRO_PLACEMENT_CFG": "dir::macro_placement.cfg",
     "FP_PDN_ENABLE_RAILS" : 1, 
-    "GRT_OVERFLOW_ITERS" : 150, 
+    "GRT_OVERFLOW_ITERS" : 50, 
+    "GRT_MAX_DIODE_INS_ITERS" : 20,
     "FP_PDN_CORE_RING" : 1 ,
+    "BASE_SDC_FILE":"dir::src/base.sdc",
     "VDD_NETS": ["vccd1", "VPWR", "VPB"],
     "GND_NETS": ["vssd1", "VGND", "VNB"],
     "EXTRA_LEFS": "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8.lef",
     "EXTRA_GDS_FILES": "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8.gds",
     "EXTRA_LIBS": "dir::src/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib",
-    "BASE_SDC_FILE":"dir::src/base.sdc",
     "pdk::sky130*": {
         "FP_CORE_UTIL": 50,
         "scl::sky130_fd_sc_hd": {
@@ -1912,10 +1916,12 @@ Below represents configuration variables set for my project openlane flow.
     "LIB_SLOWEST": "dir::src/sky130_fd_sc_hd__ss_100C_1v60.lib",
     "LIB_TYPICAL": "dir::src/sky130_fd_sc_hd__tt_025C_1v80.lib"
 
-
 }
 ```
 
+Below represents the macro placement for my application to get optimized core utilization.
+
+![macro_placement](./Images/macro_placement.png)
 
 ## Synthesis
 
@@ -1925,89 +1931,301 @@ run_synthesis
 
 ```
 
-74. Printing statistics.
+47. Printing statistics.
 
-=== display_controller ===
+=== ALU ===
 
-   Number of wires:              11389
-   Number of wire bits:          11410
-   Number of public wires:       11389
-   Number of public wire bits:   11410
+   Number of wires:               1828
+   Number of wire bits:           2003
+   Number of public wires:          18
+   Number of public wire bits:     193
    Number of memories:               0
    Number of memory bits:            0
    Number of processes:              0
-   Number of cells:              11273
-     sky130_fd_sc_hd__a2111o_2     370
-     sky130_fd_sc_hd__a2111oi_2      5
-     sky130_fd_sc_hd__a211o_2       76
-     sky130_fd_sc_hd__a211oi_2       5
-     sky130_fd_sc_hd__a21bo_2       14
-     sky130_fd_sc_hd__a21boi_2       3
-     sky130_fd_sc_hd__a21o_2       122
-     sky130_fd_sc_hd__a21oi_2       55
-     sky130_fd_sc_hd__a221o_2      786
-     sky130_fd_sc_hd__a221oi_2     304
-     sky130_fd_sc_hd__a22o_2       282
-     sky130_fd_sc_hd__a22oi_2       21
-     sky130_fd_sc_hd__a2bb2o_2     297
-     sky130_fd_sc_hd__a311o_2        4
-     sky130_fd_sc_hd__a31o_2        42
-     sky130_fd_sc_hd__a31oi_2        4
-     sky130_fd_sc_hd__a32o_2        64
-     sky130_fd_sc_hd__a41o_2         5
-     sky130_fd_sc_hd__a41oi_2        1
-     sky130_fd_sc_hd__and2_2       996
-     sky130_fd_sc_hd__and2b_2      287
-     sky130_fd_sc_hd__and3_2      1219
-     sky130_fd_sc_hd__and3b_2       12
-     sky130_fd_sc_hd__and4_2        27
-     sky130_fd_sc_hd__and4b_2       26
-     sky130_fd_sc_hd__and4bb_2      24
-     sky130_fd_sc_hd__buf_1       2466
-     sky130_fd_sc_hd__buf_2         74
-     sky130_fd_sc_hd__conb_1        22
-     sky130_fd_sc_hd__dfxtp_2     1297
-     sky130_fd_sc_hd__inv_2         79
-     sky130_fd_sc_hd__mux2_2       254
-     sky130_fd_sc_hd__mux4_2        41
-     sky130_fd_sc_hd__nand2_2      242
-     sky130_fd_sc_hd__nand3_2        7
-     sky130_fd_sc_hd__nand3b_2       6
-     sky130_fd_sc_hd__nand4_2        4
-     sky130_fd_sc_hd__nor2_2       187
-     sky130_fd_sc_hd__nor2b_2        7
-     sky130_fd_sc_hd__nor3_2         7
-     sky130_fd_sc_hd__nor3b_2        4
-     sky130_fd_sc_hd__nor4_2         6
-     sky130_fd_sc_hd__nor4b_2       11
-     sky130_fd_sc_hd__o2111a_2       3
-     sky130_fd_sc_hd__o211a_2      766
-     sky130_fd_sc_hd__o211ai_2       1
-     sky130_fd_sc_hd__o21a_2        55
-     sky130_fd_sc_hd__o21ai_2       45
-     sky130_fd_sc_hd__o21ba_2        4
-     sky130_fd_sc_hd__o221a_2       34
-     sky130_fd_sc_hd__o221ai_2       1
-     sky130_fd_sc_hd__o22a_2        23
-     sky130_fd_sc_hd__o22ai_2        3
-     sky130_fd_sc_hd__o2bb2a_2      11
-     sky130_fd_sc_hd__o2bb2ai_2      1
-     sky130_fd_sc_hd__o311a_2        6
-     sky130_fd_sc_hd__o31a_2        43
-     sky130_fd_sc_hd__o31ai_2        3
-     sky130_fd_sc_hd__o32a_2        24
-     sky130_fd_sc_hd__or2_2        182
-     sky130_fd_sc_hd__or2b_2        17
-     sky130_fd_sc_hd__or3_2         43
-     sky130_fd_sc_hd__or3b_2        17
-     sky130_fd_sc_hd__or4_2        149
-     sky130_fd_sc_hd__or4b_2        14
-     sky130_fd_sc_hd__or4bb_2        3
-     sky130_fd_sc_hd__xnor2_2       32
-     sky130_fd_sc_hd__xor2_2        26
+   Number of cells:               1848
+     $_ANDNOT_                     302
+     $_AND_                         44
+     $_MUX_                        970
+     $_NAND_                        83
+     $_NOR_                         93
+     $_NOT_                         59
+     $_ORNOT_                       52
+     $_OR_                         174
+     $_XNOR_                        36
+     $_XOR_                         35
+
+=== ID ===
+
+   Number of wires:                534
+   Number of wire bits:            780
+   Number of public wires:          16
+   Number of public wire bits:     262
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                628
+     $_ANDNOT_                     109
+     $_AND_                          7
+     $_MUX_                        421
+     $_NAND_                         9
+     $_NOR_                         17
+     $_NOT_                          6
+     $_ORNOT_                       13
+     $_OR_                          46
+
+=== IF_ID_pipeline ===
+
+   Number of wires:                372
+   Number of wire bits:            496
+   Number of public wires:          18
+   Number of public wire bits:     142
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                459
+     $_ANDNOT_                      32
+     $_MUX_                        160
+     $_NAND_                        32
+     $_NOT_                         34
+     $_OR_                         128
+     $_SDFF_PP0_                    73
+
+=== M1_M2_pipeline ===
+
+   Number of wires:                 14
+   Number of wire bits:             38
+   Number of public wires:          14
+   Number of public wire bits:      38
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 18
+     $_SDFF_PP0_                    18
+
+=== M2_WB_pipeline ===
+
+   Number of wires:                 14
+   Number of wire bits:             92
+   Number of public wires:          14
+   Number of public wire bits:      92
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 40
+     $_SDFF_PP0_                    40
+
+=== display_controller ===
+
+   Number of wires:                120
+   Number of wire bits:            519
+   Number of public wires:          40
+   Number of public wire bits:     430
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                228
+     $_ANDNOT_                      16
+     $_AND_                          7
+     $_DFF_P_                       55
+     $_MUX_                         42
+     $_NAND_                        19
+     $_NOR_                          2
+     $_NOT_                          4
+     $_ORNOT_                        4
+     $_OR_                          20
+     $_SDFFCE_PP0P_                  1
+     $_SDFFCE_PP1P_                  1
+     $_SDFFE_PN0P_                  43
+     $_SDFF_PN0_                     1
+     $_XNOR_                         1
+     $_XOR_                          8
+     sky130_sram_2kbyte_1rw1r_32x512_8      2
+     top                             1
+     uart_rx                         1
+
+=== forwarding_alu ===
+
+   Number of wires:                105
+   Number of wire bits:            272
+   Number of public wires:          10
+   Number of public wire bits:     177
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                159
+     $_ANDNOT_                       1
+     $_MUX_                        128
+     $_NOR_                          1
+     $_NOT_                          1
+     $_OR_                          18
+     $_XOR_                         10
+
+=== id_mux ===
+
+   Number of wires:                 26
+   Number of wire bits:            332
+   Number of public wires:          26
+   Number of public wire bits:     332
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                165
+     $_ANDNOT_                     165
+
+=== pc_controller ===
+
+   Number of wires:                164
+   Number of wire bits:            250
+   Number of public wires:          10
+   Number of public wire bits:      88
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                171
+     $_ANDNOT_                      31
+     $_AND_                          5
+     $_MUX_                         27
+     $_NAND_                        11
+     $_NOR_                         19
+     $_NOT_                          1
+     $_ORNOT_                        4
+     $_OR_                          15
+     $_SDFF_PP0_                     9
+     $_XNOR_                        19
+     $_XOR_                         30
+
+=== reg_file ===
+
+   Number of wires:               9475
+   Number of wire bits:          11638
+   Number of public wires:          50
+   Number of public wire bits:    1221
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              11506
+     $_ANDNOT_                    2139
+     $_AND_                          2
+     $_MUX_                       5958
+     $_NAND_                        59
+     $_NOT_                          7
+     $_ORNOT_                       85
+     $_OR_                        2231
+     $_SDFF_PP0_                  1025
+
+=== stall_unit ===
+
+   Number of wires:                 35
+   Number of wire bits:             47
+   Number of public wires:           6
+   Number of public wire bits:      18
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 30
+     $_ANDNOT_                       7
+     $_MUX_                          1
+     $_NOR_                          2
+     $_OR_                          10
+     $_XNOR_                         1
+     $_XOR_                          9
+
+=== top ===
+
+   Number of wires:                156
+   Number of wire bits:           1504
+   Number of public wires:         117
+   Number of public wire bits:    1465
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                767
+     $_ANDNOT_                      15
+     $_AND_                        715
+     $_MUX_                          5
+     $_NAND_                         6
+     $_ORNOT_                        2
+     $_OR_                          14
+     ALU                             1
+     ID                              1
+     IF_ID_pipeline                  1
+     M1_M2_pipeline                  1
+     M2_WB_pipeline                  1
+     forwarding_alu                  1
+     id_mux                          1
+     pc_controller                   1
+     reg_file                        1
+     stall_unit                      1
+
+=== uart_rx ===
+
+   Number of wires:                118
+   Number of wire bits:            183
+   Number of public wires:          14
+   Number of public wire bits:      47
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                161
+     $_ANDNOT_                      27
+     $_AND_                          9
+     $_DFF_P_                        4
+     $_NAND_                         7
+     $_NOR_                          3
+     $_NOT_                          3
+     $_ORNOT_                       14
+     $_OR_                          41
+     $_SDFFE_PN0N_                   1
+     $_SDFFE_PN0P_                   8
+     $_SDFFE_PN1P_                   2
+     $_SDFFE_PP0P_                  26
+     $_XOR_                         16
+
+=== design hierarchy ===
+
+   display_controller                1
+     top                             1
+       ALU                           1
+       ID                            1
+       IF_ID_pipeline                1
+       M1_M2_pipeline                1
+       M2_WB_pipeline                1
+       forwarding_alu                1
+       id_mux                        1
+       pc_controller                 1
+       reg_file                      1
+       stall_unit                    1
+     uart_rx                         1
+
+   Number of wires:              12961
+   Number of wire bits:          18154
+   Number of public wires:         353
+   Number of public wire bits:    4505
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:              16168
+     $_ANDNOT_                    2844
+     $_AND_                        789
+     $_DFF_P_                       59
+     $_MUX_                       7712
+     $_NAND_                       226
+     $_NOR_                        137
+     $_NOT_                        115
+     $_ORNOT_                      174
+     $_OR_                        2697
+     $_SDFFCE_PP0P_                  1
+     $_SDFFCE_PP1P_                  1
+     $_SDFFE_PN0N_                   1
+     $_SDFFE_PN0P_                  51
+     $_SDFFE_PN1P_                   2
+     $_SDFFE_PP0P_                  26
+     $_SDFF_PN0_                     1
+     $_SDFF_PP0_                  1165
+     $_XNOR_                        57
+     $_XOR_                        108
      sky130_sram_2kbyte_1rw1r_32x512_8      2
 
-   Chip area for module '\display_controller': 676655.124000
 ```
 
 ![synthesis](./Images/synthesis.png)
@@ -2061,6 +2279,8 @@ magic -T <technology-file> read lef <lef-file> read def <def-file>
 # Reports
 
 ```
+power_report
+
 ===========================================================================
  report_power
 ============================================================================
@@ -2069,32 +2289,51 @@ magic -T <technology-file> read lef <lef-file> read def <def-file>
 Group                  Internal  Switching    Leakage      Total
                           Power      Power      Power      Power (Watts)
 ----------------------------------------------------------------
-Sequential             9.27e-04   3.49e-05   1.10e-08   9.62e-04  25.7%
-Combinational          1.12e-03   6.64e-04   5.49e-08   1.79e-03  47.8%
-Macro                  9.21e-04   7.10e-07   7.09e-05   9.92e-04  26.5%
+Sequential             1.38e-03   4.09e-05   1.10e-08   1.42e-03  27.5%
+Combinational          1.38e-03   9.27e-04   5.55e-08   2.31e-03  44.5%
+Macro                  1.38e-03   7.57e-07   7.09e-05   1.45e-03  28.0%
 Pad                    0.00e+00   0.00e+00   0.00e+00   0.00e+00   0.0%
 ----------------------------------------------------------------
-Total                  2.97e-03   6.99e-04   7.10e-05   3.74e-03 100.0%
-                          79.4%      18.7%       1.9%
+Total                  4.14e-03   9.69e-04   7.10e-05   5.18e-03 100.0%
+                          79.9%      18.7%       1.4%
+
+power_report_end
 ```
 
 ```
+skew_report
+
 ===========================================================================
 report_clock_skew
 ============================================================================
 Clock clk
 Latency      CRPR       Skew
-top_inst.reg_file._11459_/CLK ^
-   0.87
-top_inst.pc_controller._319_/CLK ^
-   0.55      0.00       0.32
+top_inst.reg_file._09626_/CLK ^
+   1.01
+data_mem/clk0 ^
+   0.48      0.00       0.53
+
+skew_report_end
 ```
 
 ```
 ===========================================================================
+report_worst_slack -max (Setup)
+============================================================================
+worst slack 7.06
+
+===========================================================================
+report_worst_slack -min (Hold)
+============================================================================
+worst slack 0.13
+summary_report_end
+area_report
+
+===========================================================================
 report_design_area
 ============================================================================
-Design area 735430 u^2 54% utilization.
+Design area 752086 u^2 39% utilization.
+area_report_end
 ```
 
 ```
@@ -2119,6 +2358,14 @@ report_worst_slack -min (Hold)
 worst slack 0.14
 ```
 
+Here is the openroad view of my ASIC implementation.
+
+![openroad](./Images/openroad.png)
+
+
+Here is the link to runs folder where ASIC flow is implemented:
+
+[RUNS_Folder](https://github.com/riscv-collab/riscv-gnu-toolchain)
 
 </details>
 
