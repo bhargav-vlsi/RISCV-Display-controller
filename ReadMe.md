@@ -2336,27 +2336,6 @@ Design area 752086 u^2 39% utilization.
 area_report_end
 ```
 
-```
-===========================================================================
-report_tns
-============================================================================
-tns 0.00
-
-===========================================================================
-report_wns
-============================================================================
-wns 0.00
-
-===========================================================================
-report_worst_slack -max (Setup)
-============================================================================
-worst slack 16.44
-
-===========================================================================
-report_worst_slack -min (Hold)
-============================================================================
-worst slack 0.14
-```
 
 Here is the openroad view of my ASIC implementation.
 
@@ -2366,6 +2345,24 @@ Here is the openroad view of my ASIC implementation.
 Here is the link to runs folder where ASIC flow is implemented:
 
 [RUNS_Folder](https://github.com/riscv-collab/riscv-gnu-toolchain)
+
+
+Clock Frequency for my application:
+
+```
+Clock period: 40ns
+Slack : 7.06ns
+
+Clock Freqeuncy: 1 / (Clock period - Slack)
+Clock Frequency: 30.358MHz
+```
+
+
+Area of chip:
+
+```
+Design area is 7,52,086 um-sqr with 39% utilization
+```
 
 </details>
 
